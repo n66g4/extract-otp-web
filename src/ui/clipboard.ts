@@ -1,5 +1,5 @@
-import { announceToScreenReader } from "./notifications";
-import { logger } from "../services/logger";
+import { announceToScreenReader } from './notifications';
+import { logger } from '../services/logger';
 
 /**
  * Copies a string to the user's clipboard and provides visual feedback on a button.
@@ -13,18 +13,18 @@ export const copyToClipboard = (
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      buttonElement.classList.add("copied");
+      buttonElement.classList.add('copied');
       // Announce success to screen readers
       const subject = (
-        buttonElement.getAttribute("aria-label") || "Content"
-      ).replace("Copy ", "");
+        buttonElement.getAttribute('aria-label') || 'Content'
+      ).replace('Copy ', '');
       announceToScreenReader(`${subject} copied to clipboard.`);
-      setTimeout(() => buttonElement.classList.remove("copied"), 1500);
+      setTimeout(() => buttonElement.classList.remove('copied'), 1500);
     })
     .catch((err) => {
-      logger.error("Could not copy text: ", err);
+      logger.error('Could not copy text: ', err);
       // Announce failure to screen readers
-      announceToScreenReader("Failed to copy to clipboard.");
+      announceToScreenReader('Failed to copy to clipboard.');
     });
 };
 
@@ -35,20 +35,20 @@ export const copyToClipboard = (
  */
 export function handleCopyAction(triggerElement: HTMLElement): void {
   const container = triggerElement.closest(
-    ".secret-container, .otp-url-container"
+    '.secret-container, .otp-url-container'
   );
   if (!container) return;
 
   const input = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-    ".text-input"
+    '.text-input'
   );
-  const button = container.querySelector<HTMLButtonElement>(".copy-button");
+  const button = container.querySelector<HTMLButtonElement>('.copy-button');
   if (!input || !button) return;
 
   // Determine what text to copy. If the button itself (or its icon) was the
   // trigger, it might have a special `data-copy-text` attribute (for the URL).
   // Otherwise, just copy the input's visible value.
-  const textToCopy = triggerElement.matches(".copy-button, .copy-button *")
+  const textToCopy = triggerElement.matches('.copy-button, .copy-button *')
     ? button.dataset.copyText || input.value
     : input.value;
 

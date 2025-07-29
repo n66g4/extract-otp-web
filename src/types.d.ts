@@ -4,7 +4,7 @@ export interface OtpData {
   issuer: string;
   type: string;
   typeDescription: string;
-  counter: number | "";
+  counter: number | '';
   url: string;
 }
 

@@ -10,7 +10,9 @@
   flex-direction: column;
   gap: 0.2rem; /* Uniform spacing for all direct children */
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .otp-card-index {
@@ -90,7 +92,12 @@
 /* When a row is hovered or contains focus, lift it to ensure tooltips are visible. */
 .otp-card .detail-row:hover,
 .otp-card .detail-row:focus-within {
-  z-index: 1;
+  z-index: 2;
+}
+
+/* A row with a visible tooltip should have the highest stacking order. */
+.otp-card .detail-row:has(.copy-button.copied) {
+  z-index: 3;
 }
 
 .otp-card .text-input {
@@ -100,8 +107,8 @@
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--input-background-color);
-  font-family: "JetBrains Mono", Consolas, "SF Mono", "Courier New", Courier,
-    monospace;
+  font-family:
+    'JetBrains Mono', Consolas, 'SF Mono', 'Courier New', Courier, monospace;
   color: var(--text-color);
   box-sizing: border-box;
 }
@@ -157,16 +164,19 @@
   pointer-events: none;
   white-space: nowrap;
   color: var(--btn-text-color);
-  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    visibility 0.2s ease-out;
+  z-index: 10; /* Ensure tooltip is above other elements */
 }
 
 .copy-button::before {
-  content: "Copy";
+  content: 'Copy';
   background-color: var(--subtle-text-color);
 }
 
 .copy-button::after {
-  content: "Copied!";
+  content: 'Copied!';
   background-color: var(--success-color);
 }
 

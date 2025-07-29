@@ -1,5 +1,5 @@
-import protobuf from "protobufjs";
-import path from "path";
+import protobuf from 'protobufjs';
+import path from 'path';
 
 // This setup file is run by Vitest before any tests.
 // It patches the `protobuf.load` function to handle web-style absolute paths
@@ -16,9 +16,9 @@ protobuf.load = function (...args: any[]): any {
   // intended to be loaded from the `public` directory in a browser context.
   // remap it to a local file system path relative to the project root.
   if (
-    typeof filename === "string" &&
+    typeof filename === 'string' &&
     !filename.includes(path.sep) &&
-    !filename.startsWith(".")
+    !filename.startsWith('.')
   ) {
     // __dirname in this context is /path/to/project/tests
     filename = path.resolve(__dirname, `../public/`, filename);

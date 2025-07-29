@@ -1,19 +1,19 @@
-import QRCode from "qrcode";
-import { MigrationOtpParameter, OtpData } from "../types";
-import { $ } from "./dom";
-import { handleCopyAction } from "./clipboard";
-import { Navigation } from "./navigation";
-import { showQrModal } from "./qrModal";
-import { subscribe, getState, setState } from "../state/store";
-import { convertToOtpData } from "../services/otpFormatter";
-import { getOtpUniqueKey } from "../services/dataHandler";
-import { isNarrowViewport } from "./viewport";
+import QRCode from 'qrcode';
+import { MigrationOtpParameter, OtpData } from '../types';
+import { $ } from './dom';
+import { handleCopyAction } from './clipboard';
+import { Navigation } from './navigation';
+import { showQrModal } from './qrModal';
+import { subscribe, getState, setState } from '../state/store';
+import { convertToOtpData } from '../services/otpFormatter';
+import { getOtpUniqueKey } from '../services/dataHandler';
+import { isNarrowViewport } from './viewport';
 
 function getQrCodeColors() {
   const computedStyles = getComputedStyle(document.documentElement);
   return {
-    dark: computedStyles.getPropertyValue("--text-color").trim(),
-    light: computedStyles.getPropertyValue("--card-background").trim(),
+    dark: computedStyles.getPropertyValue('--text-color').trim(),
+    light: computedStyles.getPropertyValue('--card-background').trim(),
   };
 }
 
@@ -23,12 +23,12 @@ function getQrCodeColors() {
  */
 function autoResizeTextarea(textarea: HTMLTextAreaElement): void {
   // Temporarily reset height to allow scrollHeight to be calculated correctly.
-  textarea.style.height = "auto";
+  textarea.style.height = 'auto';
   // Set the height to the scroll height, which represents the full content height.
   textarea.style.height = `${textarea.scrollHeight}px`;
 }
 
-const cardTemplate = $<HTMLTemplateElement>("#otp-card-template");
+const cardTemplate = $<HTMLTemplateElement>('#otp-card-template');
 
 /**
  * Populates a detail field in the OTP card, handling missing values.
@@ -46,8 +46,8 @@ function populateDetail(
   );
   if (!element) return;
 
-  element.textContent = value || "Not available";
-  element.classList.toggle("value-missing", !value);
+  element.textContent = value || 'Not available';
+  element.classList.toggle('value-missing', !value);
 }
 
 /**
@@ -65,53 +65,53 @@ function populateCardDetails(
 
   // --- ARIA: Label the entire row with its title for screen reader context ---
   const titleElement =
-    cardElement.querySelector<HTMLHeadingElement>(".otp-title")!;
+    cardElement.querySelector<HTMLHeadingElement>('.otp-title')!;
   const titleId = `otp-title-${index}`;
   titleElement.id = titleId;
-  cardElement.setAttribute("aria-labelledby", titleId);
+  cardElement.setAttribute('aria-labelledby', titleId);
 
   // Populate the details from the template
   titleElement.textContent = titleText;
 
   const indexElement =
-    cardElement.querySelector<HTMLSpanElement>(".otp-card-index")!;
+    cardElement.querySelector<HTMLSpanElement>('.otp-card-index')!;
   indexElement.textContent = String(index + 1);
 
-  populateDetail(cardElement, "name", otp.name);
-  populateDetail(cardElement, "issuer", otp.issuer);
-  populateDetail(cardElement, "type", otp.typeDescription);
+  populateDetail(cardElement, 'name', otp.name);
+  populateDetail(cardElement, 'issuer', otp.issuer);
+  populateDetail(cardElement, 'type', otp.typeDescription);
 
   // Show and populate the counter field only for HOTP accounts.
   const counterRow =
-    cardElement.querySelector<HTMLParagraphElement>(".counter-row");
-  if (counterRow && otp.type === "hotp") {
-    populateDetail(cardElement, "counter", String(otp.counter));
-    counterRow.classList.add("visible");
+    cardElement.querySelector<HTMLParagraphElement>('.counter-row');
+  if (counterRow && otp.type === 'hotp') {
+    populateDetail(cardElement, 'counter', String(otp.counter));
+    counterRow.classList.add('visible');
   }
 
   // --- ARIA: Use proper labels and add descriptive help text ---
   const helpText =
-    cardElement.querySelector<HTMLParagraphElement>(".card-actions-help")!;
+    cardElement.querySelector<HTMLParagraphElement>('.card-actions-help')!;
   const helpTextId = `card-actions-help-${index}`;
   helpText.id = helpTextId;
 
   const secretInput =
-    cardElement.querySelector<HTMLTextAreaElement>(".secret-input")!;
+    cardElement.querySelector<HTMLTextAreaElement>('.secret-input')!;
   const secretInputId = `secret-input-${index}`;
   secretInput.id = secretInputId;
   secretInput.value = otp.secret;
-  cardElement.querySelector<HTMLLabelElement>(".secret-row .label")!.htmlFor =
+  cardElement.querySelector<HTMLLabelElement>('.secret-row .label')!.htmlFor =
     secretInputId;
-  secretInput.setAttribute("aria-describedby", helpTextId);
+  secretInput.setAttribute('aria-describedby', helpTextId);
 
   const urlInput =
-    cardElement.querySelector<HTMLTextAreaElement>(".url-input")!;
+    cardElement.querySelector<HTMLTextAreaElement>('.url-input')!;
   const urlInputId = `url-input-${index}`;
   urlInput.id = urlInputId;
   urlInput.value = otp.url;
-  cardElement.querySelector<HTMLLabelElement>(".otp-url-row .label")!.htmlFor =
+  cardElement.querySelector<HTMLLabelElement>('.otp-url-row .label')!.htmlFor =
     urlInputId;
-  urlInput.setAttribute("aria-describedby", helpTextId);
+  urlInput.setAttribute('aria-describedby', helpTextId);
 }
 
 /**
@@ -125,35 +125,35 @@ function setupCardEvents(
   key: string
 ): void {
   const qrCodeContainer =
-    cardElement.querySelector<HTMLButtonElement>(".qr-code-container")!;
+    cardElement.querySelector<HTMLButtonElement>('.qr-code-container')!;
   const titleText = otp.issuer ? `${otp.issuer}: ${otp.name}` : otp.name;
 
   // Update the accessible name for the QR code button
   const qrCodeLabel =
-    qrCodeContainer.querySelector<HTMLSpanElement>(".visually-hidden");
+    qrCodeContainer.querySelector<HTMLSpanElement>('.visually-hidden');
   if (qrCodeLabel) {
     qrCodeLabel.textContent = `Show larger QR code for ${titleText}`;
   }
 
-  qrCodeContainer.addEventListener("click", (event: MouseEvent) => {
+  qrCodeContainer.addEventListener('click', (event: MouseEvent) => {
     const modalTitle = otp.issuer ? `${otp.issuer}: ${otp.name}` : otp.name;
     const fromKeyboard = event.detail === 0;
     showQrModal(otp.url, modalTitle, fromKeyboard);
   });
 
   const otpDetails = cardElement.querySelector<HTMLDivElement>(
-    ".otp-card-main-content"
+    '.otp-card-main-content'
   )!;
-  otpDetails.addEventListener("click", (event) => {
+  otpDetails.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
     // Use the same breakpoint as the CSS that hides the copy button.
 
     if (isNarrowViewport()) {
       // On mobile, select the text of an input when it's tapped.
       // This allows the user to use the native copy functionality.
-      if (target.matches(".secret-input")) {
+      if (target.matches('.secret-input')) {
         (target as HTMLTextAreaElement).select();
-      } else if (target.matches(".url-input")) {
+      } else if (target.matches('.url-input')) {
         (target as HTMLTextAreaElement).select();
       }
     } else {
@@ -161,13 +161,13 @@ function setupCardEvents(
       // If the copy button is clicked, we find the associated input/textarea
       // to ensure handleCopyAction receives the element with the value.
       let elementToCopyFrom: HTMLElement = target;
-      const copyButton = target.closest(".copy-button");
+      const copyButton = target.closest('.copy-button');
       if (copyButton) {
         const container = copyButton.closest(
-          ".secret-container, .otp-url-container"
+          '.secret-container, .otp-url-container'
         );
         const inputElement =
-          container?.querySelector<HTMLElement>(".text-input");
+          container?.querySelector<HTMLElement>('.text-input');
         if (inputElement) {
           elementToCopyFrom = inputElement;
         }
@@ -190,11 +190,11 @@ function setupCardEvents(
   };
 
   // --- Selection Logic ---
-  cardElement.addEventListener("click", (event) => {
+  cardElement.addEventListener('click', (event) => {
     // Don't toggle selection if an interactive element inside the card was clicked.
     if (
       (event.target as HTMLElement).closest(
-        "a, button, input:not(.otp-select-checkbox)"
+        'a, button, input:not(.otp-select-checkbox)'
       )
     ) {
       return;
@@ -220,42 +220,42 @@ function setupCardEvents(
 function setupCardNavigation(cardElement: HTMLElement): void {
   // Get all navigable elements within the card in DOM order.
   const innerNavigables = Array.from(
-    cardElement.querySelectorAll<HTMLElement>(".navigable")
+    cardElement.querySelectorAll<HTMLElement>('.navigable')
   ).filter(
     (el) => el.offsetParent !== null // Ensure the element is visible
   );
 
   // Get specific card elements
   const secretInput =
-    cardElement.querySelector<HTMLTextAreaElement>(".secret-input")!;
+    cardElement.querySelector<HTMLTextAreaElement>('.secret-input')!;
   const urlInput =
-    cardElement.querySelector<HTMLTextAreaElement>(".url-input")!;
+    cardElement.querySelector<HTMLTextAreaElement>('.url-input')!;
   const secretCopyButton = cardElement.querySelector<HTMLButtonElement>(
-    ".secret-container .copy-button"
+    '.secret-container .copy-button'
   )!;
   const urlCopyButton = cardElement.querySelector<HTMLButtonElement>(
-    ".otp-url-container .copy-button"
+    '.otp-url-container .copy-button'
   )!;
   const qrCodeContainer =
-    cardElement.querySelector<HTMLButtonElement>(".qr-code-container")!;
+    cardElement.querySelector<HTMLButtonElement>('.qr-code-container')!;
 
   // --- Rules for going IN and OUT of the card ---
 
-  Navigation.registerRule(cardElement, "right", () => secretInput);
-  Navigation.registerRule(cardElement, "left", () => qrCodeContainer);
+  Navigation.registerRule(cardElement, 'right', () => secretInput);
+  Navigation.registerRule(cardElement, 'left', () => qrCodeContainer);
 
   // From any inner control, "Escape" returns focus to the card container.
   innerNavigables.forEach((el) => {
-    Navigation.registerKeyAction(el, "escape", () => cardElement);
+    Navigation.registerKeyAction(el, 'escape', () => cardElement);
   });
 
   // --- Rules for moving between the inner controls ---
 
-  Navigation.registerRule(qrCodeContainer, "left", () => secretCopyButton);
-  Navigation.registerRule(secretInput, "right", () => secretCopyButton);
-  Navigation.registerRule(urlInput, "right", () => urlCopyButton);
-  Navigation.registerRule(secretCopyButton, "left", () => secretInput);
-  Navigation.registerRule(urlCopyButton, "left", () => urlInput);
+  Navigation.registerRule(qrCodeContainer, 'left', () => secretCopyButton);
+  Navigation.registerRule(secretInput, 'right', () => secretCopyButton);
+  Navigation.registerRule(urlInput, 'right', () => urlCopyButton);
+  Navigation.registerRule(secretCopyButton, 'left', () => secretInput);
+  Navigation.registerRule(urlCopyButton, 'left', () => urlInput);
 }
 
 /**
@@ -269,10 +269,10 @@ function createOtpCard(
   isSelected: boolean
 ): HTMLDivElement {
   const cardFragment = cardTemplate.content.cloneNode(true) as DocumentFragment;
-  const cardElement = cardFragment.querySelector<HTMLDivElement>(".otp-card")!;
+  const cardElement = cardFragment.querySelector<HTMLDivElement>('.otp-card')!;
   cardElement.id = `otp-card-${index}`;
   cardElement.dataset.key = key;
-  cardElement.classList.toggle("selected", isSelected);
+  cardElement.classList.toggle('selected', isSelected);
   // The first card is the entry point for tabbing. Others are not in tab order.
   // The main navigation system will handle roving tabindex from here.
   // cardElement.setAttribute("tabindex", index === 0 ? "0" : "-1");
@@ -282,15 +282,15 @@ function createOtpCard(
   setupCardNavigation(cardElement);
 
   // Generate the QR code
-  const qrCodeCanvas = cardElement.querySelector<HTMLCanvasElement>("canvas")!;
+  const qrCodeCanvas = cardElement.querySelector<HTMLCanvasElement>('canvas')!;
   const checkbox = cardElement.querySelector<HTMLInputElement>(
-    ".otp-select-checkbox"
+    '.otp-select-checkbox'
   )!;
   checkbox.checked = isSelected;
   // Link the card to the checkbox for better accessibility semantics
   const checkboxId = `otp-select-${index}`;
   checkbox.id = checkboxId;
-  cardElement.setAttribute("aria-describedby", checkboxId);
+  cardElement.setAttribute('aria-describedby', checkboxId);
 
   QRCode.toCanvas(qrCodeCanvas, otp.url, {
     // The `width` option sets the canvas's drawing buffer size (its intrinsic
@@ -305,8 +305,8 @@ function createOtpCard(
   // After rendering the QR code to the canvas's drawing buffer (which sets
   // its intrinsic width/height attributes), we explicitly set the CSS style
   // to ensure it scales down to fit its container.
-  qrCodeCanvas.style.width = "100%";
-  qrCodeCanvas.style.height = "auto";
+  qrCodeCanvas.style.width = '100%';
+  qrCodeCanvas.style.height = 'auto';
 
   return cardElement;
 }
@@ -315,19 +315,19 @@ function render(
   rawOtps: MigrationOtpParameter[],
   selectedOtpKeys: Set<string>
 ): void {
-  const resultsContainer = $<HTMLDivElement>("#results-container");
+  const resultsContainer = $<HTMLDivElement>('#results-container');
 
   // Any time the results are re-rendered, the DOM has changed significantly.
   // This resets the "go back" navigation memory to prevent unexpected jumps
   // if the previously focused element is no longer in a logical position.
   Navigation.resetLastMove();
 
-  resultsContainer.innerHTML = "";
+  resultsContainer.innerHTML = '';
   if (!rawOtps || rawOtps.length === 0) {
-    resultsContainer.style.display = "none"; // Hide container if no results
+    resultsContainer.style.display = 'none'; // Hide container if no results
     return;
   }
-  resultsContainer.style.display = "block"; // Show container if there are results
+  resultsContainer.style.display = 'block'; // Show container if there are results
 
   const formattedOtps = rawOtps.map(convertToOtpData);
   const fragment = document.createDocumentFragment();
@@ -349,7 +349,7 @@ function render(
 
   // After appending, resize all textareas to ensure scrollHeight is calculated correctly.
   resultsContainer
-    .querySelectorAll<HTMLTextAreaElement>(".secret-input, .url-input")
+    .querySelectorAll<HTMLTextAreaElement>('.secret-input, .url-input')
     .forEach(autoResizeTextarea);
 }
 
@@ -381,22 +381,22 @@ export function initResults() {
     const { otps, selectedOtpKeys } = state;
 
     // --- Update UI based on state ---
-    const exportContainer = $<HTMLDivElement>("#export-container")!;
-    const selectionControls = $<HTMLDivElement>("#selection-controls")!;
-    const selectionCountSpan = $<HTMLSpanElement>("#selection-count")!;
-    const downloadCsvButton = $<HTMLButtonElement>("#download-csv-button");
-    const downloadJsonButton = $<HTMLButtonElement>("#download-json-button");
-    const exportGoogleButton = $<HTMLButtonElement>("#export-google-button");
+    const exportContainer = $<HTMLDivElement>('#export-container')!;
+    const selectionControls = $<HTMLDivElement>('#selection-controls')!;
+    const selectionCountSpan = $<HTMLSpanElement>('#selection-count')!;
+    const downloadCsvButton = $<HTMLButtonElement>('#download-csv-button');
+    const downloadJsonButton = $<HTMLButtonElement>('#download-json-button');
+    const exportGoogleButton = $<HTMLButtonElement>('#export-google-button');
     const exportLastPassButton = $<HTMLButtonElement>(
-      "#export-lastpass-button"
+      '#export-lastpass-button'
     );
-    const selectAllButton = $<HTMLButtonElement>("#select-all-button");
-    const deselectAllButton = $<HTMLButtonElement>("#deselect-all-button");
+    const selectAllButton = $<HTMLButtonElement>('#select-all-button');
+    const deselectAllButton = $<HTMLButtonElement>('#deselect-all-button');
 
     // 1. Toggle visibility of the entire export section.
     const hasOtps = otps.length > 0;
-    exportContainer.style.display = hasOtps ? "flex" : "none";
-    selectionControls.style.display = hasOtps ? "flex" : "none";
+    exportContainer.style.display = hasOtps ? 'flex' : 'none';
+    selectionControls.style.display = hasOtps ? 'flex' : 'none';
 
     if (hasOtps) {
       // 2. Update the selection count text.
@@ -409,7 +409,7 @@ export function initResults() {
         enabled: boolean
       ) => {
         button.disabled = !enabled;
-        button.classList.toggle("navigable", enabled);
+        button.classList.toggle('navigable', enabled);
       };
 
       // 3. Enable/disable "Select All" / "Select None" buttons.
@@ -436,7 +436,7 @@ export function initResults() {
 
     // If all OTPs are cleared, return focus to the file input area for a smooth workflow.
     if (otps.length === 0 && previousOtpCount > 0) {
-      $<HTMLLabelElement>(".file-input-label")?.focus();
+      $<HTMLLabelElement>('.file-input-label')?.focus();
     }
     // Update for the next change
     previousOtpCount = state.otps.length;

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -21,7 +21,7 @@
       // Immediately check for camera support and add a class to the html element.
       // This runs before the body is rendered, preventing any flicker.
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        document.documentElement.classList.add("camera-supported");
+        document.documentElement.classList.add('camera-supported');
       }
     </script>
     <link rel="stylesheet" href="/src/style.css" />
@@ -503,6 +503,15 @@
                         >jsQR</a
                       >
                       for decoding QR codes from images.
+                    </li>
+                    <li>
+                      <a
+                        href="https://github.com/nodeca/pica"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >pica</a
+                      >
+                      for high-quality image resizing.
                     </li>
                     <li>
                       <a

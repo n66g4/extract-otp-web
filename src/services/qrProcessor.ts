@@ -1,9 +1,9 @@
-import { MigrationOtpParameter } from "../types";
-import { getOtpParametersFromUrl } from "./otpUrlParser";
-import { logger, isDebugEnabled } from "./logger";
+import { MigrationOtpParameter } from '../types';
+import { getOtpParametersFromUrl } from './otpUrlParser';
+import { logger, isDebugEnabled } from './logger';
 
-import jsQR, { QRCode } from "jsqr";
-import pica from "pica";
+import jsQR, { QRCode } from 'jsqr';
+import pica from 'pica';
 
 const TARGET_SIZES = [400, 600, 800, 1000, 1200];
 const picaInstance = pica();
@@ -28,7 +28,7 @@ function openDebugPreview(
     </div>
   `
     )
-    .join("");
+    .join('');
 
   newTab.document.write(`
       <title>Debug Image Preview</title>
@@ -51,7 +51,7 @@ function openDebugPreview(
  * @returns An object with the x, y, width, and height of the padded bounding box.
  */
 function calculateBoundingBox(
-  location: QRCode["location"],
+  location: QRCode['location'],
   canvasWidth: number,
   canvasHeight: number
 ): { x: number; y: number; width: number; height: number } {
@@ -99,7 +99,7 @@ async function resizeImage(
     height = targetSize;
   }
 
-  const targetCanvas = document.createElement("canvas");
+  const targetCanvas = document.createElement('canvas');
   targetCanvas.width = Math.round(width);
   targetCanvas.height = Math.round(height);
 
@@ -111,8 +111,8 @@ async function resizeImage(
     unsharpThreshold: 2,
   });
 
-  const context = targetCanvas.getContext("2d", { willReadFrequently: true });
-  if (!context) throw new Error("Could not get target canvas context.");
+  const context = targetCanvas.getContext('2d', { willReadFrequently: true });
+  if (!context) throw new Error('Could not get target canvas context.');
   return { canvas: targetCanvas, context };
 }
 
@@ -126,7 +126,7 @@ async function resizeImage(
  */
 async function cropOriginalImage(
   originalBitmap: ImageBitmap,
-  location: QRCode["location"],
+  location: QRCode['location'],
   scale: number
 ): Promise<ImageBitmap> {
   const locatorCanvasWidth = originalBitmap.width / scale;
@@ -261,7 +261,7 @@ export function processImage(
                   locatorCanvas.height
                 );
 
-                locatorContext.strokeStyle = "red";
+                locatorContext.strokeStyle = 'red';
                 locatorContext.lineWidth = 5;
                 locatorContext.strokeRect(x, y, width, height);
 
@@ -269,12 +269,12 @@ export function processImage(
                   {
                     title: `Locator Scan (${locatorCanvas.width}x${locatorCanvas.height}px)`,
                     dataUrl: locatorCanvas.toDataURL(),
-                    alt: "Lower resolution image with detected QR area highlighted in red.",
+                    alt: 'Lower resolution image with detected QR area highlighted in red.',
                   },
                   {
                     title: `Successful Decoder Scan (${decoderCanvas.width}x${decoderCanvas.height}px Cropped)`,
                     dataUrl: decoderCanvas.toDataURL(),
-                    alt: "High resolution cropped image sent to the final decoder.",
+                    alt: 'High resolution cropped image sent to the final decoder.',
                   },
                 ]);
               }
@@ -304,20 +304,20 @@ export function processImage(
       }
 
       // If we get here, no QR code was found after all attempts.
-      logger.debug("[processImage] All scan attempts failed.");
+      logger.debug('[processImage] All scan attempts failed.');
       if (isDebugEnabled && debugCanvases.length > 0) {
         openDebugPreview(debugCanvases);
       }
       resolve(null);
     } catch (error) {
-      if (error instanceof DOMException && error.name === "SecurityError") {
+      if (error instanceof DOMException && error.name === 'SecurityError') {
         reject(
           new Error(
-            "Could not process image due to security restrictions (tainted canvas)."
+            'Could not process image due to security restrictions (tainted canvas).'
           )
         );
       }
-      reject(new Error("File is not a valid image or could not be loaded."));
+      reject(new Error('File is not a valid image or could not be loaded.'));
     }
   });
 }

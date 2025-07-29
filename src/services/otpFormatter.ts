@@ -1,12 +1,12 @@
-import { encode } from "thirty-two";
-import { OtpData, MigrationOtpParameter } from "../types";
-import { getOtpTypeInfo } from "../ui/otp";
+import { encode } from 'thirty-two';
+import { OtpData, MigrationOtpParameter } from '../types';
+import { getOtpTypeInfo } from '../ui/otp';
 
 const ALGORITHM_STRING_MAP: { [key: number]: string } = {
-  1: "SHA1",
-  2: "SHA256",
-  3: "SHA512",
-  4: "MD5",
+  1: 'SHA1',
+  2: 'SHA256',
+  3: 'SHA512',
+  4: 'MD5',
 };
 
 const DIGITS_VALUE_MAP: { [key: number]: number } = {
@@ -23,8 +23,8 @@ const DIGITS_VALUE_MAP: { [key: number]: number } = {
 export function convertToOtpData(otp: MigrationOtpParameter): OtpData {
   // The original Python script removes Base32 padding, so we do the same
   // to ensure compatibility and match the expected output.
-  const secretText = encode(otp.secret).toString().replace(/=/g, "");
-  const accountName = otp.name || "N/A"; // Use a fallback for display
+  const secretText = encode(otp.secret).toString().replace(/=/g, '');
+  const accountName = otp.name || 'N/A'; // Use a fallback for display
   const typeInfo = getOtpTypeInfo(otp.type);
   // The label for the otpauth URL is just the account name. The issuer is a separate parameter.
   const encodedLabel = encodeURIComponent(accountName);
@@ -33,14 +33,14 @@ export function convertToOtpData(otp: MigrationOtpParameter): OtpData {
     secret: secretText,
   });
   if (otp.issuer) {
-    params.set("issuer", otp.issuer);
+    params.set('issuer', otp.issuer);
   }
 
   // Add algorithm if it's not the default (SHA1)
   if (otp.algorithm && otp.algorithm !== 1) {
     const algoString = ALGORITHM_STRING_MAP[otp.algorithm];
     if (algoString) {
-      params.set("algorithm", algoString);
+      params.set('algorithm', algoString);
     }
   }
 
@@ -48,13 +48,13 @@ export function convertToOtpData(otp: MigrationOtpParameter): OtpData {
   if (otp.digits && otp.digits !== 1) {
     const digitValue = DIGITS_VALUE_MAP[otp.digits];
     if (digitValue) {
-      params.set("digits", String(digitValue));
+      params.set('digits', String(digitValue));
     }
   }
   // The protobuf library decodes int64 as a Long object. Convert it to a number.
   const counterValue = Number(otp.counter || 0);
-  if (typeInfo.key === "hotp") {
-    params.set("counter", counterValue.toString());
+  if (typeInfo.key === 'hotp') {
+    params.set('counter', counterValue.toString());
   }
   const otpAuthUrl = `otpauth://${
     typeInfo.key
@@ -63,10 +63,10 @@ export function convertToOtpData(otp: MigrationOtpParameter): OtpData {
   return {
     name: accountName,
     secret: secretText,
-    issuer: otp.issuer || "",
+    issuer: otp.issuer || '',
     type: typeInfo.key,
     typeDescription: typeInfo.description,
-    counter: typeInfo.key === "hotp" ? counterValue : "",
+    counter: typeInfo.key === 'hotp' ? counterValue : '',
     url: otpAuthUrl,
   };
 }

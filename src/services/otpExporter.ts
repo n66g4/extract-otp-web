@@ -6,13 +6,13 @@
  * This involves data mapping, protobuf serialization for Google, and a nested,
  * gzipped JSON structure for LastPass.
  */
-import { encode as base32Encode } from "thirty-two";
-import pako from "pako";
-import protobuf from "protobufjs";
-import { LastPassQrAccount, MigrationOtpParameter } from "../types";
-import { uint8ArrayToBase64 } from "./protobufProcessor";
-import { generateUUID } from "./uuid";
-import { logger } from "./logger";
+import { encode as base32Encode } from 'thirty-two';
+import pako from 'pako';
+import protobuf from 'protobufjs';
+import { LastPassQrAccount, MigrationOtpParameter } from '../types';
+import { uint8ArrayToBase64 } from './protobufProcessor';
+import { generateUUID } from './uuid';
+import { logger } from './logger';
 
 // --- Constants ---
 
@@ -38,17 +38,17 @@ const LASTPASS_DEFAULTS = {
 // --- Protobuf and Data Mapping Setup ---
 
 // Pre-load the protobuf definition once for better performance.
-const protobufRoot = protobuf.load("otp_migration.proto");
+const protobufRoot = protobuf.load('otp_migration.proto');
 
 /**
  * Maps the internal algorithm enum (number) back to the string representation
  * required by the `otpauth://` URL standard.
  */
 const ALGORITHM_STRING_MAP: { [key: number]: string } = {
-  1: "SHA1",
-  2: "SHA256",
-  3: "SHA512",
-  4: "MD5",
+  1: 'SHA1',
+  2: 'SHA256',
+  3: 'SHA512',
+  4: 'MD5',
 };
 
 /**
@@ -71,7 +71,7 @@ export async function exportToGoogleAuthenticator(
   otps: MigrationOtpParameter[]
 ): Promise<string> {
   const root = await protobufRoot;
-  const MigrationPayload = root.lookupType("MigrationPayload");
+  const MigrationPayload = root.lookupType('MigrationPayload');
 
   // The protobuf payload expects the otpParameters field.
   const payload = {
@@ -132,8 +132,8 @@ export async function exportToLastPass(
         return null;
       }
 
-      const secretText = base32Encode(otp.secret).toString().replace(/=/g, "");
-      const algorithm = ALGORITHM_STRING_MAP[otp.algorithm] || "SHA1";
+      const secretText = base32Encode(otp.secret).toString().replace(/=/g, '');
+      const algorithm = ALGORITHM_STRING_MAP[otp.algorithm] || 'SHA1';
       const digits = DIGITS_VALUE_MAP[otp.digits] || 6;
 
       const account: LastPassQrAccount = {
@@ -158,19 +158,19 @@ export async function exportToLastPass(
 
   if (lastPassAccounts.length === 0) {
     throw new Error(
-      "No compatible (TOTP) accounts selected for LastPass export."
+      'No compatible (TOTP) accounts selected for LastPass export.'
     );
   }
 
   // --- Step 2: Create the complex inner JSON payload ---
   const finalJsonPayload = {
-    dS: "",
-    dId: "",
+    dS: '',
+    dId: '',
     a: lastPassAccounts,
     f: [
       // Default folder structure seen in logs
-      { iO: true, i: 1, n: "Favorites" },
-      { iO: true, i: 0, n: "Other Accounts" },
+      { iO: true, i: 1, n: 'Favorites' },
+      { iO: true, i: 0, n: 'Other Accounts' },
     ],
   };
 
@@ -195,6 +195,6 @@ export async function exportToLastPass(
   )}`;
 
   // This log is useful for debugging the complex nested structure.
-  logger.debug("[LastPass Export] Final URL constructed:", url);
+  logger.debug('[LastPass Export] Final URL constructed:', url);
   return url;
 }

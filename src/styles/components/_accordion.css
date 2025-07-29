@@ -25,7 +25,9 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--primary-color);
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
   border-radius: 4px;
   cursor: pointer;
   /* Prevent text selection on long-press on mobile, which can interfere
@@ -46,8 +48,8 @@
 }
 
 .faq-button::after {
-  content: "\f078"; /* Font Awesome chevron-down */
-  font-family: "Font Awesome 6 Free";
+  content: '\f078'; /* Font Awesome chevron-down */
+  font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   font-size: 1rem;
   transition: transform 0.3s ease-in-out;
@@ -57,7 +59,9 @@
 .faq-answer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-in-out, padding-bottom 0.3s ease-in-out;
+  transition:
+    max-height 0.3s ease-in-out,
+    padding-bottom 0.3s ease-in-out;
   padding: 0 0.5rem; /* Horizontal padding only when closed */
 }
 
@@ -107,7 +111,7 @@
 }
 
 .tagline {
-  font-family: "Readex Pro", sans-serif;
+  font-family: 'Readex Pro', sans-serif;
   font-size: 0.85rem; /* Slightly larger text */
   font-weight: 600;
   color: var(--text-color-secondary);

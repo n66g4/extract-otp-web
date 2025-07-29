@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "format": "prettier --write index.html 'src/**/*.{ts,css}' 'tests/**/*.ts'"
   },
   "devDependencies": {
     "@types/pako": "^2.0.3",
     "@types/qrcode": "^1.5.5",
     "jsdom": "^26.1.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "vite": "^7.0.4",
     "vitest": "^3.2.4"

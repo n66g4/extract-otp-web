@@ -17,12 +17,12 @@ export interface OtpTypeInfo {
 export function getOtpTypeInfo(type: number): OtpTypeInfo {
   if (type === OtpType.TOTP) {
     return {
-      key: "totp",
-      description: "Time-based (TOTP)",
+      key: 'totp',
+      description: 'Time-based (TOTP)',
     };
   }
   return {
-    key: "hotp",
-    description: "Counter-based (HOTP)",
+    key: 'hotp',
+    description: 'Counter-based (HOTP)',
   };
 }

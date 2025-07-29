@@ -1,4 +1,4 @@
-import { Direction } from "./navigationTypes";
+import { Direction } from './navigationTypes';
 
 /**
  * Finds the closest navigable element using a line-of-sight projection model.
@@ -22,22 +22,22 @@ export function findClosestElementByProjection(
   let filteredCandidates: HTMLElement[] = [];
   const tolerance = 1; // Use a 1px tolerance for geometric calculations
   switch (direction) {
-    case "down":
+    case 'down':
       filteredCandidates = allNavigables.filter(
         (el) => el.getBoundingClientRect().top >= currentRect.bottom - tolerance
       );
       break;
-    case "up":
+    case 'up':
       filteredCandidates = allNavigables.filter(
         (el) => el.getBoundingClientRect().bottom <= currentRect.top + tolerance
       );
       break;
-    case "right":
+    case 'right':
       filteredCandidates = allNavigables.filter(
         (el) => el.getBoundingClientRect().left >= currentRect.right - tolerance
       );
       break;
-    case "left":
+    case 'left':
       filteredCandidates = allNavigables.filter(
         (el) => el.getBoundingClientRect().right <= currentRect.left + tolerance
       );
@@ -53,7 +53,7 @@ export function findClosestElementByProjection(
 
   // 2. Find candidates that intersect the projected line from the center.
   let intersectingCandidates: HTMLElement[] = [];
-  if (direction === "up" || direction === "down") {
+  if (direction === 'up' || direction === 'down') {
     intersectingCandidates = filteredCandidates.filter((el) => {
       const rect = el.getBoundingClientRect();
       return originX >= rect.left && originX <= rect.right;
@@ -73,19 +73,19 @@ export function findClosestElementByProjection(
       const rectB = b.getBoundingClientRect();
       let distA, distB;
       switch (direction) {
-        case "up":
+        case 'up':
           distA = currentRect.top - rectA.bottom;
           distB = currentRect.top - rectB.bottom;
           break;
-        case "down":
+        case 'down':
           distA = rectA.top - currentRect.bottom;
           distB = rectB.top - currentRect.bottom;
           break;
-        case "left":
+        case 'left':
           distA = currentRect.left - rectA.right;
           distB = currentRect.left - rectB.right;
           break;
-        case "right":
+        case 'right':
           distA = rectA.left - currentRect.right;
           distB = rectB.left - currentRect.right;
           break;
@@ -104,14 +104,14 @@ export function findClosestElementByProjection(
 
     let primaryDistA, primaryDistB, crossDistA, crossDistB;
 
-    if (direction === "up" || direction === "down") {
+    if (direction === 'up' || direction === 'down') {
       // Primary axis is Y, cross axis is X
       primaryDistA =
-        direction === "up"
+        direction === 'up'
           ? currentRect.top - rectA.bottom
           : rectA.top - currentRect.bottom;
       primaryDistB =
-        direction === "up"
+        direction === 'up'
           ? currentRect.top - rectB.bottom
           : rectB.top - currentRect.bottom;
       crossDistA = Math.abs(originX - (rectA.left + rectA.width / 2));
@@ -119,11 +119,11 @@ export function findClosestElementByProjection(
     } else {
       // Primary axis is X, cross axis is Y
       primaryDistA =
-        direction === "left"
+        direction === 'left'
           ? currentRect.left - rectA.right
           : rectA.left - currentRect.right;
       primaryDistB =
-        direction === "left"
+        direction === 'left'
           ? currentRect.left - rectB.right
           : rectB.left - currentRect.right;
       crossDistA = Math.abs(originY - (rectA.top + rectA.height / 2));

@@ -15,8 +15,9 @@
   --success-color-dark: #1b5e20; /* Hover state for vibrant green */
   --warning-color: #ff8f00; /* Amber 700 - a strong, accessible yellow/orange */
   --warning-color-rgb: 255, 143, 0; /* Corresponds to #ff8f00 */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
 
   --btn-text-color: #ffffff;
   --subtle-text-color: #777;

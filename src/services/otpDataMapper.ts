@@ -6,13 +6,13 @@
  * import source, making the application more modular and easier to extend with
  * new import formats in the future.
  */
-import { decode as thirtyTwoDecode } from "thirty-two";
-import { MigrationOtpParameter } from "../types";
+import { decode as thirtyTwoDecode } from 'thirty-two';
+import { MigrationOtpParameter } from '../types';
 
 // Shared constants for mapping OTP algorithm and digit counts.
 export const ALGORITHM_MAP: { [key: string]: number } = {
   SHA1: 1,
-  "SHA1-256": 2, // LastPass proprietary name for SHA256
+  'SHA1-256': 2, // LastPass proprietary name for SHA256
   SHA256: 2,
   SHA512: 3,
   MD5: 4,
@@ -30,7 +30,7 @@ export interface RawOtpAccount {
   secret: string; // Base32 encoded
   algorithm: string;
   digits: 6 | 8;
-  type: "totp" | "hotp";
+  type: 'totp' | 'hotp';
   counter?: number;
 }
 
@@ -53,7 +53,7 @@ export function mapToMigrationOtpParameter(
     issuer: acc.issuer,
     algorithm: algorithmValue,
     digits: digitsValue,
-    type: acc.type === "totp" ? 2 : 1,
+    type: acc.type === 'totp' ? 2 : 1,
     counter: acc.counter || 0,
   };
 }

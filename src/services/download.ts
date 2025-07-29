@@ -10,11 +10,11 @@ export function triggerDownload(
   mimeType: string
 ): void {
   const blob = new Blob([content], { type: mimeType });
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", filename);
-  link.style.visibility = "hidden";
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

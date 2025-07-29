@@ -1,4 +1,4 @@
-import { MigrationOtpParameter } from "../types";
+import { MigrationOtpParameter } from '../types';
 
 /**
  * Defines the shape of our application's state.
@@ -8,7 +8,7 @@ export interface AppState {
   otps: MigrationOtpParameter[];
   logCount: number;
   selectedOtpKeys: Set<string>;
-  theme: "light" | "dark" | "system";
+  theme: 'light' | 'dark' | 'system';
   focusedOtpKey: string | null;
 }
 
@@ -16,7 +16,7 @@ const state: AppState = {
   otps: [],
   logCount: 0,
   selectedOtpKeys: new Set(),
-  theme: (localStorage.getItem("theme") as AppState["theme"]) || "system",
+  theme: (localStorage.getItem('theme') as AppState['theme']) || 'system',
   focusedOtpKey: null,
 };
 

@@ -41,7 +41,9 @@
   margin-left: 1rem; /* Space between message and button */
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
   /* Make it a square for a predictable focus outline */
   width: 2rem;
   height: 2rem;

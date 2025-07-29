@@ -4,19 +4,19 @@
  * setting up global event listeners, and orchestrating the application startup.
  */
 
-import { Buffer } from "buffer"; // Keep for browser environment polyfill
-import { initResults } from "./ui/results";
-import { initFileInput } from "./ui/fileInput";
-import { initCamera } from "./ui/camera";
-import { initQrModal } from "./ui/qrModal";
-import { initThemeSwitcher } from "./ui/theme";
-import { initExportControls } from "./ui/exportControls";
-import { initNavigation } from "./ui/navigation";
-import { initFooter } from "./ui/footer";
-import { initTabs } from "./ui/tabs";
-import { initAccordion } from "./ui/accordion";
-import { displayError, announceToScreenReader } from "./ui/notifications";
-import { logger } from "./services/logger";
+import { Buffer } from 'buffer'; // Keep for browser environment polyfill
+import { initResults } from './ui/results';
+import { initFileInput } from './ui/fileInput';
+import { initCamera } from './ui/camera';
+import { initQrModal } from './ui/qrModal';
+import { initThemeSwitcher } from './ui/theme';
+import { initExportControls } from './ui/exportControls';
+import { initNavigation } from './ui/navigation';
+import { initFooter } from './ui/footer';
+import { initTabs } from './ui/tabs';
+import { initAccordion } from './ui/accordion';
+import { displayError, announceToScreenReader } from './ui/notifications';
+import { logger } from './services/logger';
 
 window.Buffer = Buffer; // Make Buffer globally available for libraries that might need it.
 
@@ -26,15 +26,15 @@ window.Buffer = Buffer; // Make Buffer globally available for libraries that mig
  */
 function setupGlobalErrorHandling(): void {
   const genericErrorMessage =
-    "An unexpected error occurred. Please try again or refresh the page.";
+    'An unexpected error occurred. Please try again or refresh the page.';
 
-  window.addEventListener("error", (event) => {
-    logger.error("Uncaught error:", event.error);
+  window.addEventListener('error', (event) => {
+    logger.error('Uncaught error:', event.error);
     displayError(genericErrorMessage);
   });
 
-  window.addEventListener("unhandledrejection", (event) => {
-    logger.error("Unhandled promise rejection:", event.reason);
+  window.addEventListener('unhandledrejection', (event) => {
+    logger.error('Unhandled promise rejection:', event.reason);
     displayError(genericErrorMessage);
   });
 }
@@ -58,4 +58,4 @@ function initializeApp(): void {
 }
 
 // Initialize the application once the DOM is ready.
-document.addEventListener("DOMContentLoaded", initializeApp);
+document.addEventListener('DOMContentLoaded', initializeApp);

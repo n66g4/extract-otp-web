@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { processJson } from "./jsonProcessor";
-import { encode } from "thirty-two";
+import { describe, it, expect } from 'vitest';
+import { processJson } from './jsonProcessor';
+import { encode } from 'thirty-two';
 
 const mockLastPassJson = `
 {
@@ -54,43 +54,43 @@ const mockOwnJsonExport = `
 ]
 `;
 
-describe("JSON Processor", () => {
-  describe("LastPass JSON File Import", () => {
-    it("should correctly parse a valid LastPass JSON export file", async () => {
+describe('JSON Processor', () => {
+  describe('LastPass JSON File Import', () => {
+    it('should correctly parse a valid LastPass JSON export file', async () => {
       const otpParameters = await processJson(mockLastPassJson);
 
       expect(otpParameters).toHaveLength(2);
 
       const firstOtp = otpParameters[0];
-      expect(firstOtp.name).toBe("test@example.com");
-      expect(firstOtp.issuer).toBe("TestService");
+      expect(firstOtp.name).toBe('test@example.com');
+      expect(firstOtp.issuer).toBe('TestService');
       expect(firstOtp.algorithm).toBe(1); // SHA1
       expect(firstOtp.digits).toBe(1); // 6 digits
       expect(firstOtp.type).toBe(2); // TOTP
       // Verify the secret was decoded correctly
-      expect(encode(firstOtp.secret).toString()).toBe("JBSWY3DPEHPK3PXP");
+      expect(encode(firstOtp.secret).toString()).toBe('JBSWY3DPEHPK3PXP');
 
       const secondOtp = otpParameters[1];
-      expect(secondOtp.issuer).toBe("AnotherService");
+      expect(secondOtp.issuer).toBe('AnotherService');
       expect(secondOtp.algorithm).toBe(2); // SHA256
       expect(secondOtp.digits).toBe(2); // 8 digits
     });
   });
 
-  describe("Own JSON File Import", () => {
-    it("should correctly parse a valid self-exported JSON file", async () => {
+  describe('Own JSON File Import', () => {
+    it('should correctly parse a valid self-exported JSON file', async () => {
       const otpParameters = await processJson(mockOwnJsonExport);
       expect(otpParameters).toHaveLength(2);
-      expect(otpParameters[0].name).toBe("test@example.com");
-      expect(otpParameters[1].issuer).toBe("AnotherService");
+      expect(otpParameters[0].name).toBe('test@example.com');
+      expect(otpParameters[1].issuer).toBe('AnotherService');
     });
   });
 
-  describe("Error Handling", () => {
-    it("should throw an error for an unsupported JSON structure", async () => {
+  describe('Error Handling', () => {
+    it('should throw an error for an unsupported JSON structure', async () => {
       const unsupportedJson = `{"foo": "bar"}`;
       await expect(processJson(unsupportedJson)).rejects.toThrow(
-        "Invalid JSON format: Expected an array of OTP accounts or a LastPass export object."
+        'Invalid JSON format: Expected an array of OTP accounts or a LastPass export object.'
       );
     });
   });

@@ -1,12 +1,12 @@
-import { $ } from "./dom";
-import { handleCopyAction } from "./clipboard";
-import { findClosestElementByScore } from "../services/spatialNavigationScore";
-import { findClosestElementByProjection } from "../services/spatialNavigationProjection";
-import { Direction } from "../services/navigationTypes";
-import { getState, setState } from "../state/store";
-import { getOtpUniqueKey } from "../services/dataHandler";
+import { $ } from './dom';
+import { handleCopyAction } from './clipboard';
+import { findClosestElementByScore } from '../services/spatialNavigationScore';
+import { findClosestElementByProjection } from '../services/spatialNavigationProjection';
+import { Direction } from '../services/navigationTypes';
+import { getState, setState } from '../state/store';
+import { getOtpUniqueKey } from '../services/dataHandler';
 
-type NavDirection = Direction | "home" | "end";
+type NavDirection = Direction | 'home' | 'end';
 type NavigationRule = () => HTMLElement | null | undefined;
 type KeyActionRule = () => HTMLElement | null;
 type Prioritizer = (
@@ -33,10 +33,10 @@ const keyActionRules = new Map<
 const prioritizers: Prioritizer[] = [];
 
 const oppositeDirection: Record<Direction, Direction> = {
-  up: "down",
-  down: "up",
-  left: "right",
-  right: "left",
+  up: 'down',
+  down: 'up',
+  left: 'right',
+  right: 'left',
 };
 
 /**
@@ -55,25 +55,25 @@ const findClosestNavigableElement = findClosestElementByProjection; // The prima
 function highlightFocus(el: HTMLElement, color: string) {
   // This function is used for debugging navigation behavior.
   el.style.outline = `2px solid ${color}`;
-  el.style.outlineOffset = "2px";
+  el.style.outlineOffset = '2px';
   setTimeout(() => {
-    el.style.outline = "";
-    el.style.outlineOffset = "";
+    el.style.outline = '';
+    el.style.outlineOffset = '';
   }, 300);
 }
 
 function getSection(el: HTMLElement): HTMLElement | null {
-  return el.closest(".navigable-section");
+  return el.closest('.navigable-section');
 }
 
 function getNavigableSections(): HTMLElement[] {
   return Array.from(
-    document.querySelectorAll<HTMLElement>(".navigable-section")
+    document.querySelectorAll<HTMLElement>('.navigable-section')
   ).filter((el) => el.offsetParent !== null);
 }
 
 function getSectionNavigables(section: HTMLElement): HTMLElement[] {
-  return Array.from(section.querySelectorAll<HTMLElement>(".navigable")).filter(
+  return Array.from(section.querySelectorAll<HTMLElement>('.navigable')).filter(
     (el) => el.offsetParent !== null
   );
 }
@@ -82,7 +82,7 @@ function setFocus(
   currentEl: HTMLElement | null,
   nextEl: HTMLElement | null,
   direction?: Direction,
-  reason?: "rule" | "prioritizer" | "reversal"
+  reason?: 'rule' | 'prioritizer' | 'reversal'
 ) {
   if (!nextEl) {
     // If focus doesn't change for any reason, clear the last move.
@@ -116,7 +116,7 @@ function setFocus(
   nextEl.focus();
 
   // When focusing an input, ensure it doesn't scroll to the end.
-  if (nextEl.matches(".secret-input, .url-input")) {
+  if (nextEl.matches('.secret-input, .url-input')) {
     (nextEl as HTMLInputElement).scrollLeft = 0;
   }
 
@@ -158,7 +158,7 @@ function findNextBySurfacing(
   currentEl: HTMLElement,
   section: HTMLElement
 ): HTMLElement | null {
-  if (section.classList.contains("navigable") && currentEl !== section) {
+  if (section.classList.contains('navigable') && currentEl !== section) {
     return section;
   }
   return null;
@@ -174,7 +174,7 @@ function findNextInAdjacentSection(
   currentSection: HTMLElement
 ): HTMLElement | null {
   // This strategy is only for vertical navigation.
-  if (direction !== "up" && direction !== "down") {
+  if (direction !== 'up' && direction !== 'down') {
     return null;
   }
 
@@ -182,7 +182,7 @@ function findNextInAdjacentSection(
   const currentSectionIndex = allSections.indexOf(currentSection);
   if (currentSectionIndex === -1) return null;
 
-  const step = direction === "down" ? 1 : -1;
+  const step = direction === 'down' ? 1 : -1;
   let nextSectionIndex = currentSectionIndex + step;
 
   // Iterate through subsequent sections in the given direction.
@@ -191,7 +191,7 @@ function findNextInAdjacentSection(
 
     // If the section container is itself a navigable target (e.g., an otp-card),
     // it becomes the focus target, rather than any of its children.
-    if (nextSection.classList.contains("navigable")) {
+    if (nextSection.classList.contains('navigable')) {
       return nextSection;
     }
 
@@ -220,18 +220,18 @@ function findNextSequentially(
   direction: Direction
 ): HTMLElement | null {
   // This strategy is only for horizontal navigation.
-  if (direction !== "left" && direction !== "right") {
+  if (direction !== 'left' && direction !== 'right') {
     return null;
   }
 
   const allNavigables = Array.from(
-    document.querySelectorAll<HTMLElement>(".navigable")
+    document.querySelectorAll<HTMLElement>('.navigable')
   ).filter((el) => el.offsetParent !== null);
 
   const currentIndex = allNavigables.indexOf(currentEl);
   if (currentIndex === -1) return null;
 
-  const step = direction === "right" ? 1 : -1;
+  const step = direction === 'right' ? 1 : -1;
   const nextIndex =
     (currentIndex + step + allNavigables.length) % allNavigables.length;
 
@@ -243,11 +243,11 @@ function findNextSequentially(
     // inside a *different* container, the target should be the container
     // itself, not the element inside it.
     const nextParentNavigable =
-      nextEl.parentElement?.closest<HTMLElement>(".navigable");
+      nextEl.parentElement?.closest<HTMLElement>('.navigable');
 
     if (nextParentNavigable) {
       const currentParentNavigable =
-        currentEl.parentElement?.closest<HTMLElement>(".navigable");
+        currentEl.parentElement?.closest<HTMLElement>('.navigable');
 
       if (nextParentNavigable !== currentParentNavigable) {
         return nextParentNavigable;
@@ -315,17 +315,17 @@ function findNext(
   // arrow key, we should go back to where we came from.
   if (
     lastMove &&
-    (direction === "up" ||
-      direction === "down" ||
-      direction === "left" ||
-      direction === "right") &&
+    (direction === 'up' ||
+      direction === 'down' ||
+      direction === 'left' ||
+      direction === 'right') &&
     currentEl === lastMove.to &&
     direction === oppositeDirection[lastMove.direction]
   ) {
     const fromEl = lastMove.from;
     // Clear the memory after using it.
     lastMove = null;
-    setFocus(currentEl, fromEl, direction, "reversal");
+    setFocus(currentEl, fromEl, direction, 'reversal');
     return null; // We handled it.
   }
 
@@ -340,7 +340,7 @@ function findNext(
     if (result) {
       // The rule returned an element. Attempt to navigate to it.
       const initialActiveElement = document.activeElement;
-      setFocus(currentEl, result, direction as Direction, "rule");
+      setFocus(currentEl, result, direction as Direction, 'rule');
       // If setFocus did not change the active element (e.g., because 'result' was not visible),
       // then fall through to spatial logic.
       if (document.activeElement !== initialActiveElement) {
@@ -356,7 +356,7 @@ function findNext(
   }
 
   // Home/End keys are only handled by explicit rules. If none were found, do nothing.
-  if (direction === "home" || direction === "end") {
+  if (direction === 'home' || direction === 'end') {
     return null;
   }
 
@@ -372,7 +372,7 @@ function findNext(
       // For now, we only pass the single best candidate. This could be expanded.
       const prioritizedEl = prioritizer([nextEl], direction, currentEl);
       if (prioritizedEl) {
-        setFocus(currentEl, prioritizedEl, direction, "prioritizer");
+        setFocus(currentEl, prioritizedEl, direction, 'prioritizer');
         return null; // Prioritizer handled focus, so we stop here.
       }
     }
@@ -396,7 +396,7 @@ function findNext(
 function handleKeydown(event: KeyboardEvent): void {
   // --- Global Shortcuts (like Ctrl+A) ---
   // These should be checked first and should work regardless of what is focused.
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "a") {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a') {
     const { otps } = getState();
     // Only override if there are OTPs to select.
     if (otps.length > 0) {
@@ -415,10 +415,10 @@ function handleKeydown(event: KeyboardEvent): void {
   // Once an element has focus, this listener will ignore subsequent key presses.
   if (target === document.body) {
     // On Down or Right arrow, focus the first interactive element.
-    if (key === "arrowdown" || key === "arrowright") {
+    if (key === 'arrowdown' || key === 'arrowright') {
       event.preventDefault();
       // The currently active tab is a good initial target.
-      const activeTab = $<HTMLButtonElement>("#info-tabs .tab-button.active");
+      const activeTab = $<HTMLButtonElement>('#info-tabs .tab-button.active');
       activeTab?.focus();
     }
     // After the initial interaction, subsequent keydowns on the body are ignored
@@ -432,12 +432,12 @@ function handleKeydown(event: KeyboardEvent): void {
   if (elementActionRules && elementActionRules[key]) {
     event.preventDefault();
     const nextEl = elementActionRules[key]!();
-    setFocus(target, nextEl, undefined, "rule");
+    setFocus(target, nextEl, undefined, 'rule');
     return; // Action handled, stop further processing.
   }
 
   if (
-    key === "escape" &&
+    key === 'escape' &&
     document.activeElement &&
     document.activeElement !== document.body
   ) {
@@ -446,9 +446,9 @@ function handleKeydown(event: KeyboardEvent): void {
   }
 
   // --- Activation ---
-  if (key === "enter" || key === " ") {
+  if (key === 'enter' || key === ' ') {
     event.preventDefault();
-    if (target.closest(".secret-container, .otp-url-container")) {
+    if (target.closest('.secret-container, .otp-url-container')) {
       handleCopyAction(target);
     } else {
       target.click();
@@ -456,14 +456,14 @@ function handleKeydown(event: KeyboardEvent): void {
     return; // Activation should not also cause navigation
   }
 
-  if (key.startsWith("arrow")) {
+  if (key.startsWith('arrow')) {
     const direction = key.substring(5) as Direction;
     event.preventDefault();
     findNext(target, direction);
-  } else if (key === "home" || key === "end") {
+  } else if (key === 'home' || key === 'end') {
     // Keep Home/End for component-specific rules
     event.preventDefault();
-    findNext(target, key as "home" | "end");
+    findNext(target, key as 'home' | 'end');
   }
 }
 
@@ -529,12 +529,12 @@ export const Navigation = {
  * global event listeners related to focus management.
  */
 export function initNavigation(): void {
-  document.addEventListener("keydown", Navigation.handleKeydown);
+  document.addEventListener('keydown', Navigation.handleKeydown);
 
   // When focus leaves a text field, unselect its content and reset scroll.
-  document.addEventListener("focusout", (event) => {
+  document.addEventListener('focusout', (event) => {
     const target = event.target as HTMLInputElement;
-    if (target.matches && target.matches(".secret-input, .url-input")) {
+    if (target.matches && target.matches('.secret-input, .url-input')) {
       // Collapse the selection to the start of the input field. This is a more
       // reliable way to "unselect" text in an input than using window.getSelection().
       target.selectionStart = target.selectionEnd = 0;

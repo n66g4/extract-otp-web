@@ -1,5 +1,5 @@
-import { $, $all } from "./dom";
-import { Navigation } from "./navigation";
+import { $, $all } from './dom';
+import { Navigation } from './navigation';
 
 /**
  * Activates a tab and its corresponding panel, updating ARIA attributes and classes.
@@ -8,19 +8,19 @@ import { Navigation } from "./navigation";
  */
 function activateTab(tabToActivate: HTMLButtonElement) {
   // If the tab is already active, there's nothing to do.
-  if (tabToActivate.classList.contains("active")) return;
+  if (tabToActivate.classList.contains('active')) return;
 
   const tabId = tabToActivate.dataset.tab;
   if (!tabId) return;
 
-  const tabButtons = $all<HTMLButtonElement>(".tab-button");
-  const tabContents = $all<HTMLDivElement>(".tab-content");
+  const tabButtons = $all<HTMLButtonElement>('.tab-button');
+  const tabContents = $all<HTMLDivElement>('.tab-content');
 
   // Deactivate all other tabs and hide their panels
   tabButtons.forEach((button) => {
     const isSelected = button === tabToActivate;
-    button.classList.toggle("active", isSelected);
-    button.setAttribute("aria-selected", String(isSelected));
+    button.classList.toggle('active', isSelected);
+    button.setAttribute('aria-selected', String(isSelected));
     button.tabIndex = isSelected ? 0 : -1;
   });
 
@@ -28,10 +28,10 @@ function activateTab(tabToActivate: HTMLButtonElement) {
   tabContents.forEach((content) => {
     const isForActiveTab = content.id === `tab-${tabId}`;
     content.hidden = !isForActiveTab;
-    content.classList.toggle("active", isForActiveTab);
+    content.classList.toggle('active', isForActiveTab);
 
     // Manage focusability of content within tab panels.
-    const navigables = content.querySelectorAll<HTMLElement>(".navigable");
+    const navigables = content.querySelectorAll<HTMLElement>('.navigable');
     if (isForActiveTab) {
       // When a tab becomes active, make its first navigable element focusable.
       // The main navigation system will handle roving tabindex from there.
@@ -49,9 +49,9 @@ function activateTab(tabToActivate: HTMLButtonElement) {
  * Sets up the event listeners and navigation rules for the tabbed interface.
  */
 function setupTabs(): void {
-  const tabButtonsContainer = $<HTMLDivElement>(".tab-buttons");
+  const tabButtonsContainer = $<HTMLDivElement>('.tab-buttons');
   const tabButtons = Array.from(
-    tabButtonsContainer.querySelectorAll<HTMLButtonElement>(".tab-button")
+    tabButtonsContainer.querySelectorAll<HTMLButtonElement>('.tab-button')
   );
 
   // --- Robust Tab Activation ---
@@ -65,23 +65,23 @@ function setupTabs(): void {
   let startButton: HTMLButtonElement | null = null;
 
   tabButtonsContainer.addEventListener(
-    "touchstart",
+    'touchstart',
     (event) => {
       // Identify the button where the touch gesture began.
       startButton = (event.target as HTMLElement).closest<HTMLButtonElement>(
-        ".tab-button"
+        '.tab-button'
       );
     },
     { passive: true } // Use passive for better scroll performance.
   );
 
-  tabButtonsContainer.addEventListener("touchend", (event) => {
+  tabButtonsContainer.addEventListener('touchend', (event) => {
     // If the touch didn't start on a button, do nothing.
     if (!startButton) return;
 
     // Find the button where the touch gesture ended.
     const endButton = (event.target as HTMLElement).closest<HTMLButtonElement>(
-      ".tab-button"
+      '.tab-button'
     );
 
     // If the touch ended on the same button it started on, it's a valid tap.
@@ -99,9 +99,9 @@ function setupTabs(): void {
   // A 'click' handler is still necessary for mouse users and accessibility (e.g.,
   // screen reader activation, Enter/Space key presses). The `preventDefault()`
   // in the `touchend` listener prevents this from firing twice on touch devices.
-  tabButtonsContainer.addEventListener("click", (event) => {
+  tabButtonsContainer.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
-      ".tab-button"
+      '.tab-button'
     );
     if (button) activateTab(button);
   });
@@ -112,15 +112,15 @@ function setupTabs(): void {
     const bestCandidate = candidates[0];
     if (!bestCandidate) return null;
 
-    const targetSection = bestCandidate.closest(".tab-buttons");
+    const targetSection = bestCandidate.closest('.tab-buttons');
     if (!targetSection) return null; // Not navigating into the tabs section.
 
-    const sourceSection = from.closest(".tab-buttons");
+    const sourceSection = from.closest('.tab-buttons');
     // If we are already moving between tabs, let the default rules apply.
     if (sourceSection === targetSection) return null;
 
     // If we are entering the tabs section, force focus to the active tab.
-    return targetSection.querySelector<HTMLButtonElement>(".tab-button.active");
+    return targetSection.querySelector<HTMLButtonElement>('.tab-button.active');
   });
 
   // Register declarative navigation rules for the tabs
@@ -129,14 +129,14 @@ function setupTabs(): void {
     // activation logic runs every time, bypassing the "go back" feature in
     // the main navigation system, which would otherwise just move focus
     // without activating the tab.
-    Navigation.registerKeyAction(button, "arrowleft", () => {
+    Navigation.registerKeyAction(button, 'arrowleft', () => {
       const prevButton =
         tabButtons[(index - 1 + tabButtons.length) % tabButtons.length];
       activateTab(prevButton);
       return prevButton;
     });
 
-    Navigation.registerKeyAction(button, "arrowright", () => {
+    Navigation.registerKeyAction(button, 'arrowright', () => {
       const nextButton = tabButtons[(index + 1) % tabButtons.length];
       activateTab(nextButton);
       return nextButton;
@@ -144,13 +144,13 @@ function setupTabs(): void {
 
     // Home/End can remain as standard rules as they don't conflict with the
     // directional "go back" logic.
-    Navigation.registerRule(button, "home", () => {
+    Navigation.registerRule(button, 'home', () => {
       const firstButton = tabButtons[0];
       activateTab(firstButton);
       return firstButton;
     });
 
-    Navigation.registerRule(button, "end", () => {
+    Navigation.registerRule(button, 'end', () => {
       const lastButton = tabButtons[tabButtons.length - 1];
       activateTab(lastButton);
       return lastButton;

@@ -1,23 +1,23 @@
-import { $ } from "./dom";
-import { downloadAsCsv } from "../services/csvExporter";
-import { downloadAsJson } from "../services/jsonExporter";
+import { $ } from './dom';
+import { downloadAsCsv } from '../services/csvExporter';
+import { downloadAsJson } from '../services/jsonExporter';
 import {
   exportToGoogleAuthenticator,
   exportToLastPass,
-} from "../services/otpExporter";
+} from '../services/otpExporter';
 import {
   announceToScreenReader,
   clearLogs,
   clearAlerts,
   displayError,
   displayWarning,
-} from "./notifications";
-import { resetFileInput } from "./fileInput";
-import { setState, getState } from "../state/store";
-import { getOtpUniqueKey } from "../services/dataHandler";
-import { MigrationOtpParameter } from "../types";
-import { showQrModal } from "./qrModal";
-import { logger } from "../services/logger";
+} from './notifications';
+import { resetFileInput } from './fileInput';
+import { setState, getState } from '../state/store';
+import { getOtpUniqueKey } from '../services/dataHandler';
+import { MigrationOtpParameter } from '../types';
+import { showQrModal } from './qrModal';
+import { logger } from '../services/logger';
 
 /**
  * Clears all logs and resets the OTP state.
@@ -50,24 +50,24 @@ async function handleExport(
 ) {
   const selectedOtps = getSelectedOtps();
   if (selectedOtps.length === 0) {
-    announceToScreenReader("No accounts selected to export.");
+    announceToScreenReader('No accounts selected to export.');
     return;
   }
   try {
     const result = await exportFn(selectedOtps);
-    if (isQrExport && typeof result === "string") {
-      const title = result.startsWith("lpaauth")
-        ? "Scan with LastPass Authenticator"
-        : "Scan with Google Authenticator";
+    if (isQrExport && typeof result === 'string') {
+      const title = result.startsWith('lpaauth')
+        ? 'Scan with LastPass Authenticator'
+        : 'Scan with Google Authenticator';
       // Show the QR modal. The `true` argument indicates that the modal was
       // opened by a user action (potentially keyboard), so focus should be
       // restored to the trigger button when the modal is closed.
       showQrModal(result, title, true /* fromKeyboard */);
     }
   } catch (error: any) {
-    const message = error.message || "An unknown error occurred during export.";
+    const message = error.message || 'An unknown error occurred during export.';
     displayError(message);
-    logger.error("Export failed:", error);
+    logger.error('Export failed:', error);
   }
 }
 
@@ -76,29 +76,29 @@ async function handleExport(
  * and manages the visibility of their container.
  */
 export function initExportControls(): void {
-  const downloadCsvButton = $<HTMLButtonElement>("#download-csv-button")!;
-  const downloadJsonButton = $<HTMLButtonElement>("#download-json-button")!;
-  const exportGoogleButton = $<HTMLButtonElement>("#export-google-button")!;
-  const exportLastPassButton = $<HTMLButtonElement>("#export-lastpass-button")!;
-  const clearAllButton = $<HTMLButtonElement>("#clear-all-button")!;
+  const downloadCsvButton = $<HTMLButtonElement>('#download-csv-button')!;
+  const downloadJsonButton = $<HTMLButtonElement>('#download-json-button')!;
+  const exportGoogleButton = $<HTMLButtonElement>('#export-google-button')!;
+  const exportLastPassButton = $<HTMLButtonElement>('#export-lastpass-button')!;
+  const clearAllButton = $<HTMLButtonElement>('#clear-all-button')!;
 
-  const selectAllButton = $<HTMLButtonElement>("#select-all-button")!;
-  const deselectAllButton = $<HTMLButtonElement>("#deselect-all-button")!;
+  const selectAllButton = $<HTMLButtonElement>('#select-all-button')!;
+  const deselectAllButton = $<HTMLButtonElement>('#deselect-all-button')!;
 
   // --- Export Button Listeners ---
-  downloadCsvButton.addEventListener("click", () => {
+  downloadCsvButton.addEventListener('click', () => {
     handleExport(async (otps) => downloadAsCsv(otps));
   });
-  downloadJsonButton.addEventListener("click", () => {
+  downloadJsonButton.addEventListener('click', () => {
     handleExport(async (otps) => downloadAsJson(otps));
   });
-  exportGoogleButton.addEventListener("click", () =>
+  exportGoogleButton.addEventListener('click', () =>
     handleExport(exportToGoogleAuthenticator, true)
   );
-  exportLastPassButton.addEventListener("click", () => {
+  exportLastPassButton.addEventListener('click', () => {
     const selectedOtps = getSelectedOtps();
     if (selectedOtps.length === 0) {
-      announceToScreenReader("No accounts selected to export.");
+      announceToScreenReader('No accounts selected to export.');
       return;
     }
 
@@ -125,8 +125,8 @@ export function initExportControls(): void {
       });
 
       // 2. Inform the user what happened and why, prompting them to click again.
-      const plural = hotpAccounts.length > 1 ? "s were" : " was";
-      const count = hotpAccounts.length == 1 ? "An" : hotpAccounts.length;
+      const plural = hotpAccounts.length > 1 ? 's were' : ' was';
+      const count = hotpAccounts.length == 1 ? 'An' : hotpAccounts.length;
       const message = `LastPass only supports time-based (TOTP) accounts. ${count} incompatible counter-based account${plural} removed from your selection. Click "Export to LastPass" again to continue.`;
       displayWarning(message);
       return; // Stop the export this time.
@@ -138,11 +138,11 @@ export function initExportControls(): void {
   });
 
   // --- State-Modifying Button Listeners ---
-  clearAllButton.addEventListener("click", () => {
+  clearAllButton.addEventListener('click', () => {
     handleClearAll();
   });
 
-  selectAllButton.addEventListener("click", (event) => {
+  selectAllButton.addEventListener('click', (event) => {
     const allKeys = new Set(getState().otps.map(getOtpUniqueKey));
     setState((s) => ({ ...s, selectedOtpKeys: allKeys }));
     // For keyboard users, move focus to the opposite action button for a
@@ -153,7 +153,7 @@ export function initExportControls(): void {
     }
   });
 
-  deselectAllButton.addEventListener("click", (event) => {
+  deselectAllButton.addEventListener('click', (event) => {
     setState((s) => ({ ...s, selectedOtpKeys: new Set() }));
     // For keyboard users, move focus to the opposite action button.
     if (event.detail === 0) {

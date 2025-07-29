@@ -1,8 +1,8 @@
-import jsQR from "jsqr";
-import { $ } from "./dom";
-import { handleDecodedQrString } from "../services/dataHandler";
-import { displayError, announceToScreenReader } from "./notifications";
-import { logger } from "../services/logger";
+import jsQR from 'jsqr';
+import { $ } from './dom';
+import { handleDecodedQrString } from '../services/dataHandler';
+import { displayError, announceToScreenReader } from './notifications';
+import { logger } from '../services/logger';
 
 // DOM Elements
 let video: HTMLVideoElement;
@@ -23,10 +23,10 @@ let elementThatOpenedModal: HTMLElement | null = null;
  * @param event The keyboard event.
  */
 function handleCameraModalKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
+  if (event.key === 'Escape') {
     event.stopPropagation();
     closeCamera();
-  } else if (event.key === "Tab") {
+  } else if (event.key === 'Tab') {
     // Currently, only the cancel button is focusable. This prevents tabbing out.
     event.preventDefault();
   }
@@ -50,15 +50,15 @@ function scanFrame() {
     );
 
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: "dontInvert",
+      inversionAttempts: 'dontInvert',
     });
 
     if (code && code.data) {
       // QR code found!
       closeCamera();
-      announceToScreenReader("QR code found and processed.");
+      announceToScreenReader('QR code found and processed.');
       // Delegate all processing to the central service.
-      handleDecodedQrString(code.data, "Camera Scan");
+      handleDecodedQrString(code.data, 'Camera Scan');
       return; // Stop the scanning loop
     }
   }
@@ -80,12 +80,12 @@ function closeCamera() {
     stream = null;
   }
 
-  cameraModal.style.display = "none";
-  document.body.classList.remove("modal-open");
+  cameraModal.style.display = 'none';
+  document.body.classList.remove('modal-open');
   video.pause();
   video.srcObject = null;
-  video.classList.remove("mirrored"); // Clean up class on close
-  document.removeEventListener("keydown", handleCameraModalKeydown);
+  video.classList.remove('mirrored'); // Clean up class on close
+  document.removeEventListener('keydown', handleCameraModalKeydown);
 
   // Restore focus to the element that opened the modal.
   elementThatOpenedModal?.focus();
@@ -104,14 +104,14 @@ async function openCamera() {
   elementThatOpenedModal = document.activeElement as HTMLElement;
 
   try {
-    cameraModal.style.display = "flex";
-    document.body.classList.add("modal-open");
-    cameraModal.setAttribute("aria-labelledby", "camera-title");
-    document.addEventListener("keydown", handleCameraModalKeydown);
+    cameraModal.style.display = 'flex';
+    document.body.classList.add('modal-open');
+    cameraModal.setAttribute('aria-labelledby', 'camera-title');
+    document.addEventListener('keydown', handleCameraModalKeydown);
     cancelButton.focus();
 
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }, // Prefer back camera on mobile
+      video: { facingMode: 'environment' }, // Prefer back camera on mobile
     });
 
     // Check if the camera is user-facing and apply a mirror effect if so.
@@ -123,10 +123,10 @@ async function openCamera() {
       // should be mirrored for a more intuitive experience. The only time
       // we don't want to mirror is when we're definitively using the
       // rear-facing (environment) camera.
-      if (settings.facingMode !== "environment") {
-        video.classList.add("mirrored");
+      if (settings.facingMode !== 'environment') {
+        video.classList.add('mirrored');
       } else {
-        video.classList.remove("mirrored");
+        video.classList.remove('mirrored');
       }
     }
 
@@ -136,11 +136,11 @@ async function openCamera() {
 
     animationFrameId = requestAnimationFrame(scanFrame);
   } catch (err: any) {
-    if (err.name === "AbortError") {
+    if (err.name === 'AbortError') {
       return; // Ignore user aborting by closing the modal.
     }
-    logger.error("Error accessing camera: ", err);
-    displayError("Could not access the camera.");
+    logger.error('Error accessing camera: ', err);
+    displayError('Could not access the camera.');
     closeCamera();
   }
 }
@@ -155,17 +155,17 @@ export function initCamera(): void {
     return;
   }
 
-  takePhotoButton = $<HTMLButtonElement>("#take-photo-button");
+  takePhotoButton = $<HTMLButtonElement>('#take-photo-button');
 
-  cameraModal = $<HTMLDivElement>("#camera-modal");
-  video = $<HTMLVideoElement>("#camera-video");
-  canvas = $<HTMLCanvasElement>("#camera-canvas");
-  cancelButton = $<HTMLButtonElement>("#camera-cancel");
-  canvasContext = canvas.getContext("2d", { willReadFrequently: true })!;
-  takePhotoButton.addEventListener("click", openCamera);
-  cancelButton.addEventListener("click", closeCamera);
+  cameraModal = $<HTMLDivElement>('#camera-modal');
+  video = $<HTMLVideoElement>('#camera-video');
+  canvas = $<HTMLCanvasElement>('#camera-canvas');
+  cancelButton = $<HTMLButtonElement>('#camera-cancel');
+  canvasContext = canvas.getContext('2d', { willReadFrequently: true })!;
+  takePhotoButton.addEventListener('click', openCamera);
+  cancelButton.addEventListener('click', closeCamera);
   // Close the modal if the overlay is clicked
-  cameraModal.addEventListener("click", (event) => {
+  cameraModal.addEventListener('click', (event) => {
     if (event.target === cameraModal) {
       closeCamera();
     }

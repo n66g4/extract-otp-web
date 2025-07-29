@@ -2,8 +2,8 @@ import {
   LastPassQrAccount,
   LastPassQrPayload,
   MigrationOtpParameter,
-} from "../types";
-import { mapToMigrationOtpParameter, RawOtpAccount } from "./otpDataMapper";
+} from '../types';
+import { mapToMigrationOtpParameter, RawOtpAccount } from './otpDataMapper';
 
 /**
  * Processes the proprietary JSON format from a LastPass QR code, converting its
@@ -35,7 +35,7 @@ export function processLastPassQrJson(
       algorithm: lpAccount.a,
       digits: lpAccount.d,
       // LastPass QR codes seem to only support TOTP
-      type: "totp",
+      type: 'totp',
     };
     return mapToMigrationOtpParameter(rawAccount);
   });

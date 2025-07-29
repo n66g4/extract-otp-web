@@ -1,9 +1,9 @@
-import { encode } from "thirty-two";
-import { MigrationOtpParameter } from "../types";
-import { getOtpParametersFromUrl } from "./otpUrlParser";
-import { addUploadLog } from "../ui/notifications";
-import { getState, setState } from "../state/store";
-import { logger } from "./logger";
+import { encode } from 'thirty-two';
+import { MigrationOtpParameter } from '../types';
+import { getOtpParametersFromUrl } from './otpUrlParser';
+import { addUploadLog } from '../ui/notifications';
+import { getState, setState } from '../state/store';
+import { logger } from './logger';
 
 /**
  * Creates a unique and consistent key for an OTP parameter.
@@ -44,19 +44,19 @@ export function filterAndLogOtps(
   }
 
   if (newOtps.length > 0) {
-    const plural = newOtps.length > 1 ? "s" : "";
+    const plural = newOtps.length > 1 ? 's' : '';
     addUploadLog(
       sourceName,
-      "success",
+      'success',
       `${newOtps.length} secret${plural} extracted.`
     );
   }
 
   if (duplicatesFound > 0) {
-    const plural = duplicatesFound > 1 ? "s" : "";
+    const plural = duplicatesFound > 1 ? 's' : '';
     addUploadLog(
       sourceName,
-      "warning",
+      'warning',
       `${duplicatesFound} duplicate secret${plural} skipped.`
     );
   }
@@ -78,7 +78,7 @@ export async function handleDecodedQrString(
     const otpParameters = await getOtpParametersFromUrl(qrCodeData);
 
     if (!otpParameters || otpParameters.length === 0) {
-      addUploadLog(sourceName, "info", "No OTP secrets found in QR code.");
+      addUploadLog(sourceName, 'info', 'No OTP secrets found in QR code.');
       return;
     }
 
@@ -97,8 +97,8 @@ export async function handleDecodedQrString(
   } catch (error: any) {
     const message =
       (error instanceof Error ? error.message : String(error)) ||
-      "An unknown error occurred.";
+      'An unknown error occurred.';
     logger.error(`Error processing QR data from ${sourceName}:`, error);
-    addUploadLog(sourceName, "error", message);
+    addUploadLog(sourceName, 'error', message);
   }
 }

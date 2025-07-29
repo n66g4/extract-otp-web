@@ -1,11 +1,11 @@
-import { MigrationOtpParameter, OtpData } from "../types";
-import { announceToScreenReader } from "../ui/notifications";
-import { convertToOtpData } from "./otpFormatter";
-import { triggerDownload } from "./download";
+import { MigrationOtpParameter, OtpData } from '../types';
+import { announceToScreenReader } from '../ui/notifications';
+import { convertToOtpData } from './otpFormatter';
+import { triggerDownload } from './download';
 
 const escapeCsvField = (field: any): string => {
-  const str = String(field ?? "");
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  const str = String(field ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -13,28 +13,28 @@ const escapeCsvField = (field: any): string => {
 
 export function downloadAsCsv(otpsToExport: MigrationOtpParameter[]): void {
   if (otpsToExport.length === 0) {
-    announceToScreenReader("No data to export.");
+    announceToScreenReader('No data to export.');
     return;
   }
 
   const headers: (keyof OtpData)[] = [
-    "name",
-    "secret",
-    "issuer",
-    "type",
-    "typeDescription",
-    "counter",
-    "url",
+    'name',
+    'secret',
+    'issuer',
+    'type',
+    'typeDescription',
+    'counter',
+    'url',
   ];
 
   const otpDataForCsv = otpsToExport.map(convertToOtpData);
   const csvRows = [
-    headers.join(","),
+    headers.join(','),
     ...otpDataForCsv.map((otp) =>
-      headers.map((header) => escapeCsvField(otp[header])).join(",")
+      headers.map((header) => escapeCsvField(otp[header])).join(',')
     ),
   ];
 
-  const csvString = csvRows.join("\n");
-  triggerDownload("otp_secrets.csv", csvString, "text/csv;charset=utf-8;");
+  const csvString = csvRows.join('\n');
+  triggerDownload('otp_secrets.csv', csvString, 'text/csv;charset=utf-8;');
 }

@@ -1,6 +1,6 @@
-import QRCode from "qrcode";
-import { $ } from "./dom";
-import { isNarrowViewport } from "./viewport";
+import QRCode from 'qrcode';
+import { $ } from './dom';
+import { isNarrowViewport } from './viewport';
 
 // --- Accessibility Enhancement: Manage focus before/after modal opens ---
 let elementThatOpenedModal: HTMLElement | null = null;
@@ -12,22 +12,22 @@ let elementThatOpenedModal: HTMLElement | null = null;
 let openedByKeyboard = false;
 
 function handleModalKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
+  if (event.key === 'Escape') {
     event.stopPropagation(); // Prevent the global handler from also firing
     hideQrModal();
     return;
   }
 
   // Trap focus within the modal
-  if (event.key === "Tab") {
-    const modal = $<HTMLDivElement>("#qr-modal");
+  if (event.key === 'Tab') {
+    const modal = $<HTMLDivElement>('#qr-modal');
     // Find all focusable elements within the modal
     const focusableElements = Array.from(
       modal.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       )
     ).filter(
-      (el) => !el.hasAttribute("disabled") && !el.getAttribute("aria-hidden")
+      (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden')
     );
 
     if (focusableElements.length === 0) return;
@@ -52,10 +52,10 @@ function handleModalKeydown(event: KeyboardEvent): void {
 }
 
 function hideQrModal(): void {
-  const modal = $<HTMLDivElement>("#qr-modal");
-  modal.style.display = "none";
-  $<HTMLDivElement>("#modal-content").innerHTML = "";
-  document.removeEventListener("keydown", handleModalKeydown);
+  const modal = $<HTMLDivElement>('#qr-modal');
+  modal.style.display = 'none';
+  $<HTMLDivElement>('#modal-content').innerHTML = '';
+  document.removeEventListener('keydown', handleModalKeydown);
 
   // --- Accessibility Enhancement: Restore focus to the element that opened the modal ---
   // Only restore focus if the modal was opened via the keyboard. This prevents
@@ -66,7 +66,7 @@ function hideQrModal(): void {
     }
     elementThatOpenedModal = null;
   }
-  document.body.classList.remove("modal-open");
+  document.body.classList.remove('modal-open');
 }
 
 export function showQrModal(
@@ -78,14 +78,14 @@ export function showQrModal(
   elementThatOpenedModal = document.activeElement as HTMLElement;
   openedByKeyboard = fromKeyboard;
 
-  const modal = $<HTMLDivElement>("#qr-modal");
-  const modalContent = $<HTMLDivElement>("#modal-content");
-  const modalCloseButton = $<HTMLButtonElement>(".modal-close");
-  const modalTitleId = "qr-modal-title";
+  const modal = $<HTMLDivElement>('#qr-modal');
+  const modalContent = $<HTMLDivElement>('#modal-content');
+  const modalCloseButton = $<HTMLButtonElement>('.modal-close');
+  const modalTitleId = 'qr-modal-title';
 
-  modalContent.innerHTML = "";
+  modalContent.innerHTML = '';
 
-  const modalCanvas = document.createElement("canvas");
+  const modalCanvas = document.createElement('canvas');
 
   QRCode.toCanvas(modalCanvas, otpAuthUrl, {
     // The `width` option sets the canvas's drawing buffer size (its intrinsic
@@ -95,37 +95,37 @@ export function showQrModal(
     width: 512,
     margin: 2,
     // modal QR is always white on black for ease of scanning regardless of theme
-    color: { dark: "#000000", light: "#ffffff" },
+    color: { dark: '#000000', light: '#ffffff' },
   });
 
   // After rendering the QR code to the canvas's drawing buffer (which sets
   // its intrinsic width/height attributes), we explicitly set the CSS style
   // to ensure it scales down to fit its container.
-  modalCanvas.style.width = "100%";
-  modalCanvas.style.height = "auto";
+  modalCanvas.style.width = '100%';
+  modalCanvas.style.height = 'auto';
 
   modalContent.appendChild(modalCanvas);
 
-  const titleElement = document.createElement("p");
+  const titleElement = document.createElement('p');
   titleElement.id = modalTitleId;
-  titleElement.className = "modal-title";
+  titleElement.className = 'modal-title';
   titleElement.textContent = title;
   modalContent.appendChild(titleElement);
 
-  modal.style.display = "flex";
-  modal.setAttribute("aria-labelledby", modalTitleId);
-  document.addEventListener("keydown", handleModalKeydown);
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-labelledby', modalTitleId);
+  document.addEventListener('keydown', handleModalKeydown);
   modalCloseButton.focus();
-  document.body.classList.add("modal-open");
+  document.body.classList.add('modal-open');
 }
 
 export function initQrModal(): void {
-  const modal = $<HTMLDivElement>("#qr-modal");
-  const modalCloseButton = $<HTMLButtonElement>(".modal-close");
+  const modal = $<HTMLDivElement>('#qr-modal');
+  const modalCloseButton = $<HTMLButtonElement>('.modal-close');
 
-  modal.addEventListener("click", (event) => {
+  modal.addEventListener('click', (event) => {
     if (event.target === modal) hideQrModal();
   });
 
-  modalCloseButton.addEventListener("click", hideQrModal);
+  modalCloseButton.addEventListener('click', hideQrModal);
 }

@@ -10,10 +10,10 @@ import {
   LastPassFileAccount,
   MigrationOtpParameter,
   OtpData,
-} from "../types";
-import { mapToMigrationOtpParameter, RawOtpAccount } from "./otpDataMapper";
-import { getOtpParametersFromUrl } from "./otpUrlParser";
-import { logger } from "./logger";
+} from '../types';
+import { mapToMigrationOtpParameter, RawOtpAccount } from './otpDataMapper';
+import { getOtpParametersFromUrl } from './otpUrlParser';
+import { logger } from './logger';
 
 // --- Type Guards ---
 
@@ -25,7 +25,7 @@ import { logger } from "./logger";
 function isOtpDataArray(data: unknown): data is OtpData[] {
   return (
     Array.isArray(data) &&
-    (data.length === 0 || (typeof data[0] === "object" && "url" in data[0]))
+    (data.length === 0 || (typeof data[0] === 'object' && 'url' in data[0]))
   );
 }
 
@@ -36,7 +36,7 @@ function isOtpDataArray(data: unknown): data is OtpData[] {
  */
 function isLastPassFilePayload(data: unknown): data is LastPassFilePayload {
   return (
-    typeof data === "object" &&
+    typeof data === 'object' &&
     data !== null &&
     Array.isArray((data as LastPassFilePayload).accounts)
   );
@@ -53,7 +53,7 @@ async function processOtpDataArray(
   otpDataArray: OtpData[]
 ): Promise<MigrationOtpParameter[]> {
   const promises = otpDataArray
-    .filter((otp) => otp.url && typeof otp.url === "string")
+    .filter((otp) => otp.url && typeof otp.url === 'string')
     .map((otp) =>
       getOtpParametersFromUrl(otp.url).catch((error: any) => {
         logger.warn(`Skipping invalid entry in JSON file: ${otp.name}`, error);
@@ -80,7 +80,7 @@ function processLastPassPayload(
       secret: lpAccount.secret,
       algorithm: lpAccount.algorithm,
       digits: lpAccount.digits,
-      type: lpAccount.timeStep ? "totp" : "hotp",
+      type: lpAccount.timeStep ? 'totp' : 'hotp',
       counter: lpAccount.counter,
     };
     return mapToMigrationOtpParameter(rawAccount);
@@ -106,6 +106,6 @@ export async function processJson(
   }
 
   throw new Error(
-    "Invalid JSON format: Expected an array of OTP accounts or a LastPass export object."
+    'Invalid JSON format: Expected an array of OTP accounts or a LastPass export object.'
   );
 }

@@ -1,9 +1,9 @@
-import pako from "pako";
-import { MigrationOtpParameter } from "../types";
-import { base64ToUint8Array, decodeProtobufPayload } from "./protobufProcessor";
-import { processLastPassQrJson } from "./lastPassFormatter";
-import { mapToMigrationOtpParameter, RawOtpAccount } from "./otpDataMapper";
-import { logger } from "./logger";
+import pako from 'pako';
+import { MigrationOtpParameter } from '../types';
+import { base64ToUint8Array, decodeProtobufPayload } from './protobufProcessor';
+import { processLastPassQrJson } from './lastPassFormatter';
+import { mapToMigrationOtpParameter, RawOtpAccount } from './otpDataMapper';
+import { logger } from './logger';
 
 /**
  * Decodes a standard otpauth:// URL into OTP parameters.
@@ -16,19 +16,19 @@ async function decodeStandardOtpAuthUrl(
   const url = new URL(otpUrlString);
 
   const type = url.hostname.toLowerCase(); // 'totp' or 'hotp'
-  if (type !== "totp" && type !== "hotp") {
+  if (type !== 'totp' && type !== 'hotp') {
     throw new Error(`Unsupported OTP type in URL: ${type}`);
   }
 
   const label = decodeURIComponent(url.pathname.substring(1));
   const params = url.searchParams;
 
-  const secretB32 = params.get("secret");
+  const secretB32 = params.get('secret');
   if (!secretB32) {
     throw new Error("Missing 'secret' parameter in otpauth URL.");
   }
 
-  let issuer = params.get("issuer");
+  let issuer = params.get('issuer');
   let name = label;
 
   if (issuer) {
@@ -39,28 +39,28 @@ async function decodeStandardOtpAuthUrl(
     }
   } else {
     // If issuer is not in params, try to extract from label "Issuer:Name".
-    const parts = label.split(":");
+    const parts = label.split(':');
     if (parts.length > 1) {
       issuer = parts[0];
-      name = parts.slice(1).join(":").trim();
+      name = parts.slice(1).join(':').trim();
     }
   }
 
-  const algorithmStr = (params.get("algorithm") || "SHA1").toUpperCase();
-  const digitsStr = params.get("digits") || "6";
+  const algorithmStr = (params.get('algorithm') || 'SHA1').toUpperCase();
+  const digitsStr = params.get('digits') || '6';
   const digits = parseInt(digitsStr, 10);
 
   const rawAccount: RawOtpAccount = {
     name: name,
-    issuer: issuer || "",
+    issuer: issuer || '',
     secret: secretB32,
     algorithm: algorithmStr,
     digits: digits === 6 || digits === 8 ? digits : 6,
     type: type,
   };
 
-  if (type === "hotp") {
-    const counterStr = params.get("counter");
+  if (type === 'hotp') {
+    const counterStr = params.get('counter');
     if (!counterStr) {
       throw new Error(
         "Missing 'counter' parameter for hotp type in otpauth URL."
@@ -95,10 +95,10 @@ async function decodeGoogleAuthenticatorPayload(
 async function decodeLastPassPayload(
   dataBase64: string
 ): Promise<MigrationOtpParameter[]> {
-  logger.debug("[LastPass Import] Step 1: Received Base64 data", dataBase64);
+  logger.debug('[LastPass Import] Step 1: Received Base64 data', dataBase64);
   const decodedBytes = base64ToUint8Array(dataBase64);
   logger.debug(
-    "[LastPass Import] Step 2: Decoded Base64 to Uint8Array",
+    '[LastPass Import] Step 2: Decoded Base64 to Uint8Array',
     decodedBytes
   );
 
@@ -106,20 +106,20 @@ async function decodeLastPassPayload(
     // The outer layer is Gzipped JSON.
     const jsonWrapperBytes = pako.inflate(decodedBytes);
     logger.debug(
-      "[LastPass Import] Step 3: Inflated outer payload",
+      '[LastPass Import] Step 3: Inflated outer payload',
       jsonWrapperBytes
     );
     const jsonWrapperString = new TextDecoder().decode(jsonWrapperBytes);
     logger.debug(
-      "[LastPass Import] Step 4: Decoded outer payload to JSON string",
+      '[LastPass Import] Step 4: Decoded outer payload to JSON string',
       jsonWrapperString
     );
     const jsonWrapper = JSON.parse(jsonWrapperString);
 
-    if (jsonWrapper.content && typeof jsonWrapper.content === "string") {
+    if (jsonWrapper.content && typeof jsonWrapper.content === 'string') {
       const contentBase64 = jsonWrapper.content;
       logger.debug(
-        "[LastPass Import] Step 5: Extracted inner Base64 content",
+        '[LastPass Import] Step 5: Extracted inner Base64 content',
         contentBase64
       );
 
@@ -128,7 +128,7 @@ async function decodeLastPassPayload(
       const finalJsonBytes = pako.inflate(gzippedInnerPayload);
       const finalJsonString = new TextDecoder().decode(finalJsonBytes);
       logger.debug(
-        "[LastPass Import] Step 6: Decoded final inner JSON string",
+        '[LastPass Import] Step 6: Decoded final inner JSON string',
         finalJsonString
       );
 
@@ -141,9 +141,9 @@ async function decodeLastPassPayload(
       "Invalid LastPass QR code: 'content' property not found in payload."
     );
   } catch (e) {
-    logger.error("Failed to decode or decompress LastPass payload:", e);
+    logger.error('Failed to decode or decompress LastPass payload:', e);
     throw new Error(
-      "Failed to decode LastPass QR code. The data format is not recognized or is corrupted."
+      'Failed to decode LastPass QR code. The data format is not recognized or is corrupted.'
     );
   }
 }
@@ -157,20 +157,20 @@ export async function getOtpParametersFromUrl(
   otpUrl: string
 ): Promise<MigrationOtpParameter[]> {
   const trimmedUrl = otpUrl.trim();
-  const isLastPass = trimmedUrl.startsWith("lpaauth-migration://");
-  const isGoogleAuth = trimmedUrl.startsWith("otpauth-migration://");
-  const isStandardOtp = trimmedUrl.startsWith("otpauth://");
+  const isLastPass = trimmedUrl.startsWith('lpaauth-migration://');
+  const isGoogleAuth = trimmedUrl.startsWith('otpauth-migration://');
+  const isStandardOtp = trimmedUrl.startsWith('otpauth://');
 
   if (isStandardOtp) {
     return decodeStandardOtpAuthUrl(trimmedUrl);
   }
 
   if (!isLastPass && !isGoogleAuth) {
-    throw new Error("QR code is not a supported format.");
+    throw new Error('QR code is not a supported format.');
   }
 
   const url = new URL(otpUrl);
-  const dataBase64 = url.searchParams.get("data");
+  const dataBase64 = url.searchParams.get('data');
 
   if (!dataBase64) {
     throw new Error('Invalid OTP URL: Missing "data" parameter.');
