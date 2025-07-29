@@ -5,4 +5,7 @@ import { defineConfig } from "vite";
  */
 export default defineConfig({
   base: "/extract-otp-web/",
+  server: {
+    https: true,
+  },
 });

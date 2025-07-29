@@ -17,13 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Readex+Pro&display=swap"
       rel="stylesheet"
     />
-    <script>
-      // Immediately check for camera support and add a class to the html element.
-      // This runs before the body is rendered, preventing any flicker.
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        document.documentElement.classList.add('camera-supported');
-      }
-    </script>
+
     <link rel="stylesheet" href="/src/style.css" />
   </head>
 
@@ -894,13 +888,22 @@
       class="modal-overlay"
       role="dialog"
       aria-modal="true"
-      style="display: none"
     >
       <div class="camera-container">
         <video id="camera-video" playsinline></video>
         <div class="camera-reticle"></div>
         <div id="camera-title" class="camera-scan-text">Scan QR Code</div>
         <canvas id="camera-canvas" style="display: none"></canvas>
+        <div class="camera-controls">
+          <select id="camera-select" class="navigable"></select>
+          <button
+            id="camera-switch"
+            class="btn btn-secondary navigable"
+            aria-label="Switch Camera"
+          >
+            <i class="fa fa-sync-alt"></i>
+          </button>
+        </div>
         <button
           id="camera-cancel"
           class="modal-close navigable"

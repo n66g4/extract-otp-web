@@ -1,173 +1,150 @@
-import jsQR from 'jsqr';
-import { $ } from './dom';
-import { handleDecodedQrString } from '../services/dataHandler';
-import { displayError, announceToScreenReader } from './notifications';
+import QrScanner from 'qr-scanner';
+import { getOtpParametersFromUrl } from '../services/otpUrlParser';
+import { setState, getState } from '../state/store';
+import { displayError, addUploadLog } from './notifications';
 import { logger } from '../services/logger';
+import { filterAndLogOtps, getOtpUniqueKey } from '../services/dataHandler';
 
-// DOM Elements
-let video: HTMLVideoElement;
-let canvas: HTMLCanvasElement;
-let canvasContext: CanvasRenderingContext2D;
-let cameraModal: HTMLDivElement;
-let takePhotoButton: HTMLButtonElement;
-let cancelButton: HTMLButtonElement;
+const cameraModal = document.getElementById('camera-modal') as HTMLElement;
+const video = document.getElementById('camera-video') as HTMLVideoElement;
+const cameraTitle = document.getElementById('camera-title') as HTMLElement;
+const cameraSelect = document.getElementById(
+  'camera-select'
+) as HTMLSelectElement;
+const cameraSwitch = document.getElementById(
+  'camera-switch'
+) as HTMLButtonElement;
+const takePhotoButton = document.getElementById(
+  'take-photo-button'
+) as HTMLButtonElement;
 
-let stream: MediaStream | null = null;
-let animationFrameId: number | null = null;
-let elementThatOpenedModal: HTMLElement | null = null;
+let qrScanner: QrScanner | null = null;
+let currentCameraId: string | null = null;
 
-/**
- * Handles keydown events within the camera modal for accessibility.
- * - Closes the modal on 'Escape'.
- * - Traps focus within the modal.
- * @param event The keyboard event.
- */
-function handleCameraModalKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') {
-    event.stopPropagation();
-    closeCamera();
-  } else if (event.key === 'Tab') {
-    // Currently, only the cancel button is focusable. This prevents tabbing out.
-    event.preventDefault();
-  }
-}
-
-/**
- * Draws the current video frame to the canvas and attempts to scan for a QR code.
- */
-function scanFrame() {
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    // Set canvas size to match video stream
-    canvas.height = video.videoHeight;
-    canvas.width = video.videoWidth;
-    canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageData = canvasContext.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'dontInvert',
-    });
-
-    if (code && code.data) {
-      // QR code found!
-      closeCamera();
-      announceToScreenReader('QR code found and processed.');
-      // Delegate all processing to the central service.
-      handleDecodedQrString(code.data, 'Camera Scan');
-      return; // Stop the scanning loop
-    }
-  }
-  // Continue scanning
-  animationFrameId = requestAnimationFrame(scanFrame);
-}
-
-/**
- * Stops the camera stream and closes the modal.
- */
-function closeCamera() {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop());
-    stream = null;
-  }
-
-  cameraModal.style.display = 'none';
-  document.body.classList.remove('modal-open');
-  video.pause();
-  video.srcObject = null;
-  video.classList.remove('mirrored'); // Clean up class on close
-  document.removeEventListener('keydown', handleCameraModalKeydown);
-
-  // Restore focus to the element that opened the modal.
-  elementThatOpenedModal?.focus();
-  elementThatOpenedModal = null;
-}
-
-/**
- * Opens the camera modal and starts the video stream.
- */
-async function openCamera() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    displayError("Sorry, your browser doesn't support accessing the camera.");
-    return;
-  }
-
-  elementThatOpenedModal = document.activeElement as HTMLElement;
+async function processScanResult(result: QrScanner.ScanResult) {
+  logger.debug('decoded qr code:', result.data);
+  stopScan();
 
   try {
-    cameraModal.style.display = 'flex';
-    document.body.classList.add('modal-open');
-    cameraModal.setAttribute('aria-labelledby', 'camera-title');
-    document.addEventListener('keydown', handleCameraModalKeydown);
-    cancelButton.focus();
+    const otpParameters = await getOtpParametersFromUrl(result.data);
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }, // Prefer back camera on mobile
-    });
+    if (otpParameters && otpParameters.length > 0) {
+      const currentOtps = getState().otps; // Use getState() to read current state
+      const existingAndBatchKeys = new Set(currentOtps.map(getOtpUniqueKey));
 
-    // Check if the camera is user-facing and apply a mirror effect if so.
-    // This is more intuitive for "selfie" style cameras.
-    const videoTrack = stream.getVideoTracks()[0];
-    if (videoTrack) {
-      const settings = videoTrack.getSettings();
-      // On desktop, and for front-facing cameras on mobile, the video feed
-      // should be mirrored for a more intuitive experience. The only time
-      // we don't want to mirror is when we're definitively using the
-      // rear-facing (environment) camera.
-      if (settings.facingMode !== 'environment') {
-        video.classList.add('mirrored');
-      } else {
-        video.classList.remove('mirrored');
+      const { newOtps, duplicatesFound } = filterAndLogOtps(
+        otpParameters,
+        existingAndBatchKeys,
+        'Camera Scan'
+      );
+
+      if (newOtps.length > 0) {
+        setState((currentState) => ({
+          otps: [...currentState.otps, ...newOtps],
+        }));
+      } else if (duplicatesFound > 0) {
+        addUploadLog('Camera Scan', 'info', 'QR code already processed.');
       }
+    } else {
+      addUploadLog(
+        'Camera Scan',
+        'warning',
+        'No OTP secrets found in QR code.'
+      );
     }
-
-    video.srcObject = stream;
-
-    await video.play();
-
-    animationFrameId = requestAnimationFrame(scanFrame);
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
-      return; // Ignore user aborting by closing the modal.
-    }
-    logger.error('Error accessing camera: ', err);
-    displayError('Could not access the camera.');
-    closeCamera();
+  } catch (error: any) {
+    logger.error('Error processing scanned QR code:', error);
+    displayError(
+      error.message || 'Failed to process QR code from camera feed.'
+    );
+    addUploadLog('Camera Scan', 'error', error.message || 'Processing failed.');
   }
 }
 
-/**
- * Initializes the camera feature by setting up DOM element references and event listeners.
- */
-export function initCamera(): void {
-  // The button is hidden by CSS, but we still use this check as a safeguard
-  // to avoid adding listeners if the feature is not supported.
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    return;
+async function startScan() {
+  if (!qrScanner) {
+    qrScanner = new QrScanner(video, processScanResult, {
+      highlightScanRegion: true,
+      highlightCodeOutline: true,
+      onDecodeError: (error) => {
+        // Log decode errors but don't display them to the user unless persistent
+        logger.debug('QR scan decode error:', error);
+        cameraTitle.textContent = 'Scanning...'; // Reset text on error
+      },
+    });
   }
+  cameraModal.classList.add('active'); // Use class for display
+  cameraTitle.textContent = 'Scan QR Code';
 
-  takePhotoButton = $<HTMLButtonElement>('#take-photo-button');
+  try {
+    await qrScanner.start();
+    const cameras = await QrScanner.listCameras(true);
+    cameraSelect.innerHTML = '';
+    cameras.forEach((camera) => {
+      const option = document.createElement('option');
+      option.value = camera.id;
+      option.textContent = camera.label;
+      cameraSelect.appendChild(option);
+    });
+    if (cameras.length > 1) {
+      cameraSelect.style.display = 'block';
+      cameraSwitch.style.display = 'block';
+    } else {
+      cameraSelect.style.display = 'none';
+      cameraSwitch.style.display = 'none';
+    }
+    currentCameraId = cameras[0]?.id || null;
+    if (currentCameraId) {
+      cameraSelect.value = currentCameraId;
+    }
+  } catch (error) {
+    logger.error('Failed to start camera:', error);
+    displayError(
+      'Failed to start camera. Please ensure you have a camera connected and have granted permission.'
+    );
+    stopScan();
+  }
+}
 
-  cameraModal = $<HTMLDivElement>('#camera-modal');
-  video = $<HTMLVideoElement>('#camera-video');
-  canvas = $<HTMLCanvasElement>('#camera-canvas');
-  cancelButton = $<HTMLButtonElement>('#camera-cancel');
-  canvasContext = canvas.getContext('2d', { willReadFrequently: true })!;
-  takePhotoButton.addEventListener('click', openCamera);
-  cancelButton.addEventListener('click', closeCamera);
-  // Close the modal if the overlay is clicked
-  cameraModal.addEventListener('click', (event) => {
-    if (event.target === cameraModal) {
-      closeCamera();
+function stopScan() {
+  if (qrScanner) {
+    qrScanner.stop();
+  }
+  cameraModal.classList.remove('active'); // Use class for display
+}
+
+async function switchCamera() {
+  if (!qrScanner) return;
+  const cameras = await QrScanner.listCameras(true);
+  if (cameras.length <= 1) return;
+
+  const currentIndex = cameras.findIndex(
+    (camera) => camera.id === currentCameraId
+  );
+  const nextIndex = (currentIndex + 1) % cameras.length;
+  const nextCamera = cameras[nextIndex];
+
+  try {
+    await qrScanner.setCamera(nextCamera.id);
+    currentCameraId = nextCamera.id;
+    cameraSelect.value = currentCameraId;
+    logger.debug('Switched to camera:', nextCamera.label);
+  } catch (error) {
+    logger.error('Failed to switch camera:', error);
+    displayError('Failed to switch camera.');
+  }
+}
+
+export function initCamera() {
+  document
+    .getElementById('take-photo-button')
+    ?.addEventListener('click', startScan);
+  document.getElementById('camera-cancel')?.addEventListener('click', stopScan);
+  cameraSelect.addEventListener('change', () => {
+    if (qrScanner) {
+      qrScanner.setCamera(cameraSelect.value);
+      currentCameraId = cameraSelect.value;
     }
   });
+  cameraSwitch.addEventListener('click', switchCamera);
 }

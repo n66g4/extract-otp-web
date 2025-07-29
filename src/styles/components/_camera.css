@@ -1,15 +1,19 @@
 /* --- Camera Feature UI --- */
 
-/*
-  Hide the camera button by default. It will only be shown if the inline
-  script in the <head> detects camera support and adds the .camera-supported
-  class to the <html> element. This prevents a "flicker" on page load.
-*/
 #take-photo-button {
-  display: none;
+  display: inline-flex; /* Always display the button */
 }
-.camera-supported #take-photo-button {
-  display: inline-flex; /* Use inline-flex to match .btn styles */
+
+/* Camera Modal Overlay */
+#camera-modal {
+  display: none; /* Hidden by default */
+}
+
+#camera-modal.active {
+  display: flex; /* Use flexbox for centering when active */
+  justify-content: center;
+  align-items: center;
+  /* The modal-overlay class already handles position, background, etc. */
 }
 
 .camera-container {
@@ -62,4 +66,34 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   pointer-events: none; /* So it doesn't interfere with clicks on the overlay */
   text-align: center;
+}
+
+.camera-controls {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10; /* Ensure controls are above video */
+}
+
+#camera-select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#camera-switch {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
 }

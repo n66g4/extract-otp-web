@@ -5,6 +5,7 @@
  */
 
 import { Buffer } from 'buffer'; // Keep for browser environment polyfill
+import QrScanner from 'qr-scanner';
 import { initResults } from './ui/results';
 import { initFileInput } from './ui/fileInput';
 import { initCamera } from './ui/camera';
@@ -19,6 +20,7 @@ import { displayError, announceToScreenReader } from './ui/notifications';
 import { logger } from './services/logger';
 
 window.Buffer = Buffer; // Make Buffer globally available for libraries that might need it.
+QrScanner.WORKER_PATH = '/assets/qr-scanner-worker.min.js'; // Set the worker path
 
 /**
  * Sets up global error handlers to catch unhandled exceptions and promise
