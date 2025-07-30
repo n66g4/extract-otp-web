@@ -73,26 +73,38 @@ async function startScan() {
       },
     });
   }
-  cameraModal.classList.add('active'); // Use class for display
-  cameraTitle.textContent = 'Scan QR Code';
 
   try {
     await qrScanner.start();
+    document.body.classList.add('modal-open'); // Lock the underlying page
+    cameraModal.classList.add('active'); // Use class for display
+    cameraTitle.textContent = 'Scan QR Code';
+
     const cameras = await QrScanner.listCameras(true);
     cameraSelect.innerHTML = '';
-    cameras.forEach((camera) => {
-      const option = document.createElement('option');
-      option.value = camera.id;
-      option.textContent = camera.label;
-      cameraSelect.appendChild(option);
-    });
-    if (cameras.length > 1) {
+
+    if (cameras.length > 2) {
+      // For more than 2 cameras (e.g., desktop with multiple webcams, or advanced mobile setups)
+      // Show dropdown and switch button
+      cameras.forEach((camera) => {
+        const option = document.createElement('option');
+        option.value = camera.id;
+        option.textContent = camera.label;
+        cameraSelect.appendChild(option);
+      });
       cameraSelect.style.display = 'block';
       cameraSwitch.style.display = 'block';
+    } else if (cameras.length === 2) {
+      // For exactly two cameras (typical mobile front/back)
+      // Hide dropdown, show only switch button
+      cameraSelect.style.display = 'none';
+      cameraSwitch.style.display = 'block';
     } else {
+      // For one or zero cameras
       cameraSelect.style.display = 'none';
       cameraSwitch.style.display = 'none';
     }
+
     currentCameraId = cameras[0]?.id || null;
     if (currentCameraId) {
       cameraSelect.value = currentCameraId;
@@ -102,7 +114,7 @@ async function startScan() {
     displayError(
       'Failed to start camera. Please ensure you have a camera connected and have granted permission.'
     );
-    stopScan();
+    stopScan(); // Ensure modal is closed if camera fails to start
   }
 }
 
@@ -111,6 +123,7 @@ function stopScan() {
     qrScanner.stop();
   }
   cameraModal.classList.remove('active'); // Use class for display
+  document.body.classList.remove('modal-open'); // Unlock the underlying page
 }
 
 async function switchCamera() {

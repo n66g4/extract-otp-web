@@ -4,6 +4,7 @@ import { logger, isDebugEnabled } from './logger';
 
 import jsQR, { QRCode } from 'jsqr';
 import pica from 'pica';
+import QrScanner from 'qr-scanner';
 
 const TARGET_SIZES = [400, 600, 800, 1000, 1200];
 const picaInstance = pica();
@@ -166,14 +167,16 @@ export function processImage(
   logger.debug(`[processImage] Starting multi-pass scan for: ${file.name}`);
   return new Promise(async (resolve, reject) => {
     // Helper to process a found QR code and resolve the main promise.
-    const processAndResolve = async (qrCode: QRCode) => {
+    const processAndResolve = async (qrCodeResult: QRCode | string) => {
       try {
-        const otpParameters = await getOtpParametersFromUrl(qrCode.data);
+        const qrCodeData =
+          typeof qrCodeResult === 'string' ? qrCodeResult : qrCodeResult.data;
+        const otpParameters = await getOtpParametersFromUrl(qrCodeData);
         resolve(otpParameters);
       } catch (err) {
         logger.error(
           `Failed to process QR code content from ${file.name}. Raw data:`,
-          qrCode.data
+          qrCodeResult
         );
         reject(err);
       }
@@ -217,6 +220,15 @@ export function processImage(
           locatorImageData.width,
           locatorImageData.height
         );
+
+        // Force jsQR to fail if VITE_FORCE_JSQR_FAIL is set for testing fallback
+        if (import.meta.env.VITE_FORCE_JSQR_FAIL) {
+          logger.debug(
+            '[processImage] VITE_FORCE_JSQR_FAIL is set. Forcing jsQR to fail.'
+          );
+          // Skip the rest of the jsQR attempts and proceed to fallback to qr-scanner, for testing.
+          continue;
+        }
 
         // Attempt 1: Use locator scan to find QR, then do high-res cropped scan
         if (initialScanResult) {
@@ -301,6 +313,29 @@ export function processImage(
           await processAndResolve(initialScanResult);
           return;
         }
+      }
+
+      // If we get here, no QR code was found after all jsQR attempts.
+      logger.debug(
+        '[processImage] All jsQR scan attempts failed. Trying QrScanner.scanImage as fallback.'
+      );
+
+      try {
+        const qrScannerResult = await QrScanner.scanImage(file);
+        if (qrScannerResult) {
+          logger.debug(
+            '[processImage] QrScanner.scanImage succeeded:',
+            qrScannerResult
+          );
+          await processAndResolve(qrScannerResult);
+          return;
+        }
+      } catch (qrScannerError) {
+        logger.debug(
+          '[processImage] QrScanner.scanImage fallback failed:',
+          qrScannerError
+        );
+        // Continue to original error handling if QrScanner also fails
       }
 
       // If we get here, no QR code was found after all attempts.

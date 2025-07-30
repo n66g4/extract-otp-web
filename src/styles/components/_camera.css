@@ -25,9 +25,7 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--modal-shadow);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  /* Removed flex properties as parent modal will handle centering */
 }
 
 #camera-video {
@@ -70,30 +68,47 @@
 
 .camera-controls {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
   z-index: 10; /* Ensure controls are above video */
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  padding: 5px 10px;
+  border-radius: 5px;
 }
 
 #camera-select {
-  padding: 8px 12px;
+  padding: 5px 8px;
   border-radius: 5px;
-  border: 1px solid var(--border-color);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
 #camera-switch {
-  padding: 8px 12px;
+  padding: 5px 8px;
   border-radius: 5px;
-  border: 1px solid var(--border-color);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 0.9rem;
   cursor: pointer;
+}
+
+/* Adjust modal close button for camera modal */
+#camera-modal .modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100; /* Ensure it's above everything else */
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+#camera-modal .modal-close:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
