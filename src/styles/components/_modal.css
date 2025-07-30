@@ -16,6 +16,10 @@ body.modal-open {
   z-index: 1000;
 }
 
+.modal-overlay.active {
+  display: flex; /* Show when active */
+}
+
 /* --- Mobile-First Styles --- */
 #modal-content {
   position: relative;

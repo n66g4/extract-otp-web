@@ -1,3 +1,4 @@
+import { openModal, closeModal } from './modalHandler';
 import QrScanner from 'qr-scanner';
 import { getOtpParametersFromUrl } from '../services/otpUrlParser';
 import { setState, getState } from '../state/store';
@@ -20,6 +21,40 @@ const takePhotoButton = document.getElementById(
 
 let qrScanner: QrScanner | null = null;
 let currentCameraId: string | null = null;
+
+// Helper to determine camera facing mode from label
+function getCameraFacingMode(
+  label: string
+): 'user' | 'environment' | 'unknown' {
+  const lowerCaseLabel = label.toLowerCase();
+  if (/(front|user|face|facetime)/.test(lowerCaseLabel)) {
+    return 'user';
+  } else if (/(back|rear|environment)/.test(lowerCaseLabel)) {
+    return 'environment';
+  }
+  return 'unknown';
+}
+
+// Helper to find the "simplest" camera of a given facing mode
+function findBestCamera(
+  cameras: QrScanner.Camera[],
+  facingMode: 'user' | 'environment'
+): QrScanner.Camera | undefined {
+  const filteredCameras = cameras.filter(
+    (camera) => getCameraFacingMode(camera.label) === facingMode
+  );
+
+  if (filteredCameras.length === 0) {
+    return undefined;
+  }
+
+  // Prioritize cameras with shorter, less descriptive labels (e.g., "Back Camera" over "Back Triple Camera")
+  return filteredCameras.sort((a, b) => {
+    const aScore = a.label.length;
+    const bScore = b.label.length;
+    return aScore - bScore;
+  })[0];
+}
 
 async function processScanResult(result: QrScanner.ScanResult) {
   logger.debug('decoded qr code:', result.data);
@@ -61,54 +96,98 @@ async function processScanResult(result: QrScanner.ScanResult) {
   }
 }
 
-async function startScan() {
-  if (!qrScanner) {
-    qrScanner = new QrScanner(video, processScanResult, {
-      highlightScanRegion: true,
-      highlightCodeOutline: true,
-      onDecodeError: (error) => {
-        // Log decode errors but don't display them to the user unless persistent
-        logger.debug('QR scan decode error:', error);
-        cameraTitle.textContent = 'Scanning...'; // Reset text on error
-      },
-    });
-  }
-
+async function startScan(event: MouseEvent | KeyboardEvent) {
   try {
-    await qrScanner.start();
-    document.body.classList.add('modal-open'); // Lock the underlying page
-    cameraModal.classList.add('active'); // Use class for display
-    cameraTitle.textContent = 'Scan QR Code';
+    const openedByKeyboard = event.detail === 0; // Check if triggered by keyboard (Enter/Space)
+    openModal(cameraModal, stopScan, openedByKeyboard); // Use shared modal handler
 
     const cameras = await QrScanner.listCameras(true);
     cameraSelect.innerHTML = '';
 
-    if (cameras.length > 2) {
-      // For more than 2 cameras (e.g., desktop with multiple webcams, or advanced mobile setups)
-      // Show dropdown and switch button
-      cameras.forEach((camera) => {
-        const option = document.createElement('option');
-        option.value = camera.id;
-        option.textContent = camera.label;
-        cameraSelect.appendChild(option);
-      });
-      cameraSelect.style.display = 'block';
-      cameraSwitch.style.display = 'block';
-    } else if (cameras.length === 2) {
-      // For exactly two cameras (typical mobile front/back)
-      // Hide dropdown, show only switch button
-      cameraSelect.style.display = 'none';
-      cameraSwitch.style.display = 'block';
-    } else {
-      // For one or zero cameras
-      cameraSelect.style.display = 'none';
-      cameraSwitch.style.display = 'none';
+    const userCameras = cameras.filter(
+      (camera) => getCameraFacingMode(camera.label) === 'user'
+    );
+    const environmentCameras = cameras.filter(
+      (camera) => getCameraFacingMode(camera.label) === 'environment'
+    );
+
+    let initialCamera: QrScanner.Camera | undefined;
+
+    // Prioritize simplest environment camera
+    initialCamera = findBestCamera(environmentCameras, 'environment');
+    if (!initialCamera) {
+      // Fallback to simplest user camera
+      initialCamera = findBestCamera(userCameras, 'user');
+    }
+    if (!initialCamera && cameras.length > 0) {
+      // Fallback to first available camera if no clear facing mode
+      initialCamera = cameras[0];
     }
 
-    currentCameraId = cameras[0]?.id || null;
-    if (currentCameraId) {
+    if (initialCamera) {
+      cameras
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .forEach((camera) => {
+          const option = document.createElement('option');
+          option.value = camera.id;
+          // Remove common device ID patterns like (XXXX:YYYY) for cleaner display
+          option.textContent = camera.label.replace(
+            /\s*\([0-9a-fA-F]{4}:[0-9a-fA-F]{4}\)/,
+            ''
+          );
+          cameraSelect.appendChild(option);
+        });
+
+      currentCameraId = initialCamera.id;
+
+      // Initialize qrScanner with the preferred camera
+      qrScanner = new QrScanner(video, processScanResult, {
+        highlightScanRegion: true,
+        highlightCodeOutline: false,
+        preferredCamera: currentCameraId, // Set preferred camera here
+        onDecodeError: (error) => {
+          if (error !== 'No QR code found') {
+            logger.debug('QR scan decode error:', error);
+          }
+        },
+      });
+
       cameraSelect.value = currentCameraId;
+      applyVideoMirroring(initialCamera.label);
+
+      // Conditional display of dropdown and switch button
+      const hasBothFacingModes =
+        userCameras.length > 0 && environmentCameras.length > 0;
+      const isTwoCamerasOneOfEach =
+        cameras.length === 2 &&
+        userCameras.length === 1 &&
+        environmentCameras.length === 1;
+
+      if (isTwoCamerasOneOfEach) {
+        cameraSelect.style.display = 'none';
+      } else {
+        cameraSelect.style.display = 'block';
+      }
+
+      if (hasBothFacingModes) {
+        cameraSwitch.style.display = 'block';
+      } else {
+        cameraSwitch.style.display = 'none';
+      }
+
+      await qrScanner.start(); // Now start the scanner with the preferred camera set
+    } else {
+      // No cameras available
+      cameraSelect.style.display = 'none';
+      cameraSwitch.style.display = 'none';
+      currentCameraId = null;
+      displayError(
+        'No camera found. Please ensure you have a camera connected.'
+      );
+      stopScan(); // Ensure modal is closed if no camera
+      return; // Exit early if no camera
     }
+
   } catch (error) {
     logger.error('Failed to start camera:', error);
     displayError(
@@ -120,10 +199,24 @@ async function startScan() {
 
 function stopScan() {
   if (qrScanner) {
-    qrScanner.stop();
+    qrScanner.destroy(); // Destroy the scanner instance to clean up DOM and event listeners
+    qrScanner = null; // Set to null so a new instance is created next time
   }
-  cameraModal.classList.remove('active'); // Use class for display
-  document.body.classList.remove('modal-open'); // Unlock the underlying page
+  closeModal(cameraModal); // Use shared modal handler
+}
+
+function applyVideoMirroring(cameraLabel: string) {
+  const facingMode = getCameraFacingMode(cameraLabel);
+  if (facingMode === 'environment') {
+    video.classList.remove('mirrored-video');
+    video.classList.add('regular-video');
+  } else {
+    video.classList.remove('regular-video');
+    video.classList.add('mirrored-video');
+  }
+  logger.debug(
+    `Camera: ${cameraLabel}, Facing Mode: ${facingMode}, Mirroring: ${video.classList.contains('mirrored-video') ? 'scaleX(-1)' : 'scaleX(1)'}`
+  );
 }
 
 async function switchCamera() {
@@ -131,20 +224,37 @@ async function switchCamera() {
   const cameras = await QrScanner.listCameras(true);
   if (cameras.length <= 1) return;
 
-  const currentIndex = cameras.findIndex(
-    (camera) => camera.id === currentCameraId
+  const userCameras = cameras.filter(
+    (camera) => getCameraFacingMode(camera.label) === 'user'
   );
-  const nextIndex = (currentIndex + 1) % cameras.length;
-  const nextCamera = cameras[nextIndex];
+  const environmentCameras = cameras.filter(
+    (camera) => getCameraFacingMode(camera.label) === 'environment'
+  );
 
-  try {
-    await qrScanner.setCamera(nextCamera.id);
-    currentCameraId = nextCamera.id;
-    cameraSelect.value = currentCameraId;
-    logger.debug('Switched to camera:', nextCamera.label);
-  } catch (error) {
-    logger.error('Failed to switch camera:', error);
-    displayError('Failed to switch camera.');
+  const currentCamera = cameras.find((cam) => cam.id === currentCameraId);
+  if (!currentCamera) return; // Should not happen
+
+  const currentFacingMode = getCameraFacingMode(currentCamera.label);
+  let targetCamera: QrScanner.Camera | undefined;
+
+  if (currentFacingMode === 'user') {
+    targetCamera = findBestCamera(environmentCameras, 'environment');
+  } else {
+    // If current is environment or unknown, switch to user
+    targetCamera = findBestCamera(userCameras, 'user');
+  }
+
+  if (targetCamera) {
+    try {
+      await qrScanner.setCamera(targetCamera.id);
+      currentCameraId = targetCamera.id;
+      cameraSelect.value = currentCameraId;
+      applyVideoMirroring(targetCamera.label);
+      logger.debug('Switched to camera:', targetCamera.label);
+    } catch (error) {
+      logger.error('Failed to switch camera:', error);
+      displayError('Failed to switch camera.');
+    }
   }
 }
 
@@ -153,10 +263,16 @@ export function initCamera() {
     .getElementById('take-photo-button')
     ?.addEventListener('click', startScan);
   document.getElementById('camera-cancel')?.addEventListener('click', stopScan);
-  cameraSelect.addEventListener('change', () => {
+  cameraSelect.addEventListener('change', async () => {
     if (qrScanner) {
+      const selectedCamera = Array.from(cameraSelect.options).find(
+        (option) => option.value === cameraSelect.value
+      );
       qrScanner.setCamera(cameraSelect.value);
       currentCameraId = cameraSelect.value;
+      if (selectedCamera) {
+        applyVideoMirroring(selectedCamera.textContent || '');
+      }
     }
   });
   cameraSwitch.addEventListener('click', switchCamera);

@@ -1,6 +1,6 @@
 import { MigrationOtpParameter } from '../types';
 import { getOtpParametersFromUrl } from './otpUrlParser';
-import { logger, isDebugEnabled } from './logger';
+import { logger } from './logger';
 
 import jsQR, { QRCode } from 'jsqr';
 import pica from 'pica';
@@ -199,7 +199,7 @@ export function processImage(
         const { canvas: locatorCanvas, context: locatorContext } =
           await resizeImage(originalBitmap, locatorSize);
 
-        if (isDebugEnabled) {
+        if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
           debugCanvases.push({
             title: `Attempted Scan at ${locatorCanvas.width}x${locatorCanvas.height}px`,
             dataUrl: locatorCanvas.toDataURL(),
@@ -265,7 +265,7 @@ export function processImage(
               logger.debug(
                 `[processImage] Success on cropped scan at ${decoderSize}px`
               );
-              if (isDebugEnabled) {
+              if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
                 // Draw the detected location on the locator canvas for context
                 const { x, y, width, height } = calculateBoundingBox(
                   initialScanResult.location,
@@ -301,7 +301,7 @@ export function processImage(
           logger.debug(
             `[processImage] Cropped scan failed. Falling back to full image scan at ${locatorSize}px`
           );
-          if (isDebugEnabled) {
+          if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
             openDebugPreview([
               {
                 title: `Fallback Full Scan (${locatorCanvas.width}x${locatorCanvas.height}px)`,
@@ -340,7 +340,10 @@ export function processImage(
 
       // If we get here, no QR code was found after all attempts.
       logger.debug('[processImage] All scan attempts failed.');
-      if (isDebugEnabled && debugCanvases.length > 0) {
+      if (
+        import.meta.env.VITE_DEBUG_QR_IMAGES === 'true' &&
+        debugCanvases.length > 0
+      ) {
         openDebugPreview(debugCanvases);
       }
       resolve(null);

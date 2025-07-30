@@ -11,6 +11,7 @@
 
 #camera-modal.active {
   display: flex; /* Use flexbox for centering when active */
+  flex-direction: column; /* Stack children vertically */
   justify-content: center;
   align-items: center;
   /* The modal-overlay class already handles position, background, etc. */
@@ -28,6 +29,15 @@
   /* Removed flex properties as parent modal will handle centering */
 }
 
+.camera-controls {
+  position: static; /* Remove absolute positioning */
+  margin-top: 10px; /* Add space between video and controls */
+  transform: none; /* Remove transform */
+  background-color: rgba(0, 0, 0, 0.7); /* Make background more opaque */
+  padding: 10px 15px; /* Adjust padding */
+  border-radius: 8px; /* Match container border-radius */
+}
+
 #camera-video {
   /* Ensure the video covers the container, even if it means cropping */
   width: 100%;
@@ -35,23 +45,31 @@
   object-fit: cover;
 }
 
-#camera-video.mirrored {
-  transform: scaleX(-1);
+.mirrored-video {
+  transform: scaleX(-1) !important;
 }
 
-.camera-reticle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60%;
-  aspect-ratio: 1 / 1; /* Modern way to create a square */
-  max-width: 300px;
-  max-height: 300px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
+.regular-video {
+  transform: scaleX(1) !important;
 }
+
+/* QR Scanner Overlay Styling */
+.scan-region-highlight {
+  border-radius: 8px; /* Match container border-radius */
+  /* outline: rgba(0, 0, 0, 0.5) solid 50vmax; /* Darken outside scan region */
+}
+
+.scan-region-highlight-svg {
+  stroke: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ) !important; /* White border for scan region */
+  stroke-width: 3 !important;
+}
+
+
 
 .camera-scan-text {
   position: absolute;
@@ -67,36 +85,42 @@
 }
 
 .camera-controls {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Positioned relative to its parent flex container */
+  margin-top: 10px; /* Add space between video and controls */
   display: flex;
   gap: 10px;
   z-index: 10; /* Ensure controls are above video */
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  padding: 5px 10px;
-  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  padding: 10px 15px;
+  border-radius: 8px;
 }
 
 #camera-select {
   padding: 5px 8px;
   border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
   font-size: 0.9rem;
   cursor: pointer;
 }
 
+#camera-select:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
 #camera-switch {
   padding: 5px 8px;
   border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
   font-size: 0.9rem;
   cursor: pointer;
+}
+
+#camera-switch:hover {
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Adjust modal close button for camera modal */

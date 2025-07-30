@@ -9,7 +9,7 @@ import QrScanner from 'qr-scanner';
 import { initResults } from './ui/results';
 import { initFileInput } from './ui/fileInput';
 import { initCamera } from './ui/camera';
-import { initQrModal } from './ui/qrModal';
+
 import { initThemeSwitcher } from './ui/theme';
 import { initExportControls } from './ui/exportControls';
 import { initNavigation } from './ui/navigation';
@@ -50,7 +50,7 @@ function initializeApp(): void {
   initNavigation();
   initTabs();
   initAccordion();
-  initQrModal();
+  
   initResults();
   initFileInput();
   initCamera();
