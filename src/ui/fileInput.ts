@@ -6,6 +6,7 @@ import { getOtpUniqueKey, filterAndLogOtps } from "../services/dataHandler";
 import { setState, getState } from "../state/store";
 import { addUploadLog, displayError } from "./notifications";
 import { $ } from "./dom";
+import { t } from "../services/i18n";
 
 /**
  * Toggles the UI's processing state. It disables the input immediately but only
@@ -51,7 +52,7 @@ async function processSingleFile(
       const fileContent = await file.text();
       otpParameters = await processCsv(fileContent);
     } else {
-      throw new Error("Unsupported file type.");
+      throw new Error(t("messages.unsupportedFileType"));
     }
 
     if (otpParameters && otpParameters.length > 0) {
@@ -63,17 +64,17 @@ async function processSingleFile(
       return { newOtps, hasDuplicatesOrErrors: duplicatesFound > 0 };
     } else if (otpParameters === null) {
       // This case is specific to image processing where no QR code is found.
-      addUploadLog(file.name, "warning", "No QR code found.");
+      addUploadLog(file.name, "warning", t("messages.noQrCodeFound"));
       return { newOtps: [], hasDuplicatesOrErrors: true };
     } else {
       // This case handles empty but valid files (e.g., empty JSON array).
-      addUploadLog(file.name, "info", "No OTP secrets found.");
+      addUploadLog(file.name, "info", t("messages.noOtpSecretsFound"));
       return { newOtps: [], hasDuplicatesOrErrors: false };
     }
   } catch (error: any) {
     const message =
       (error instanceof Error ? error.message : String(error)) ||
-      "An unknown error occurred.";
+      t("messages.unknownError");
     console.error(`Error processing file ${file.name}:`, error);
     addUploadLog(file.name, "error", message);
     return { newOtps: [], hasDuplicatesOrErrors: true };
@@ -136,7 +137,7 @@ async function processFiles(files: FileList | null): Promise<void> {
     }
   } catch (error: any) {
     displayError(
-      error.message || "An unexpected error occurred while processing files."
+      error.message || t("fileProcessing.errorProcessingFiles")
     );
   } finally {
     setProcessingState(false);

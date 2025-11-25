@@ -18,6 +18,7 @@ import { getOtpUniqueKey } from "../services/dataHandler";
 import { MigrationOtpParameter } from "../types";
 import { showQrModal } from "./qrModal";
 import { logger } from "../services/logger";
+import { t } from "../services/i18n";
 
 /**
  * Clears all logs and resets the OTP state.
@@ -50,15 +51,15 @@ async function handleExport(
 ) {
   const selectedOtps = getSelectedOtps();
   if (selectedOtps.length === 0) {
-    announceToScreenReader("No accounts selected to export.");
+    announceToScreenReader(t("messages.noAccountsSelected"));
     return;
   }
   try {
     const result = await exportFn(selectedOtps);
     if (isQrExport && typeof result === "string") {
       const title = result.startsWith("lpaauth")
-        ? "Scan with LastPass Authenticator"
-        : "Scan with Google Authenticator";
+        ? t("exportTitles.scanWithLastPass")
+        : t("exportTitles.scanWithGoogle");
       // Show the QR modal. The `true` argument indicates that the modal was
       // opened by a user action (potentially keyboard), so focus should be
       // restored to the trigger button when the modal is closed.
@@ -98,7 +99,7 @@ export function initExportControls(): void {
   exportLastPassButton.addEventListener("click", () => {
     const selectedOtps = getSelectedOtps();
     if (selectedOtps.length === 0) {
-      announceToScreenReader("No accounts selected to export.");
+      announceToScreenReader(t("messages.noAccountsSelected"));
       return;
     }
 
@@ -125,9 +126,8 @@ export function initExportControls(): void {
       });
 
       // 2. Inform the user what happened and why, prompting them to click again.
-      const plural = hotpAccounts.length > 1 ? "s were" : " was";
-      const count = hotpAccounts.length == 1 ? "An" : hotpAccounts.length;
-      const message = `LastPass only supports time-based (TOTP) accounts. ${count} incompatible counter-based account${plural} removed from your selection. Click "Export to LastPass" again to continue.`;
+      const count = hotpAccounts.length;
+      const message = `${t("messages.lastPassOnlyTotp")} ${count} ${t("messages.lastPassIncompatibleRemoved")} ${t("messages.clickAgainToContinue")}`;
       displayWarning(message);
       return; // Stop the export this time.
     }

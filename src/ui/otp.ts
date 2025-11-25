@@ -1,3 +1,5 @@
+import { t } from "../services/i18n";
+
 export enum OtpType {
   HOTP = 1,
   TOTP = 2,
@@ -18,11 +20,11 @@ export function getOtpTypeInfo(type: number): OtpTypeInfo {
   if (type === OtpType.TOTP) {
     return {
       key: "totp",
-      description: "Time-based (TOTP)",
+      description: t("common.type") + " " + "Time-based (TOTP)", // Keep technical term
     };
   }
   return {
     key: "hotp",
-    description: "Counter-based (HOTP)",
+    description: t("common.type") + " " + "Counter-based (HOTP)", // Keep technical term
   };
 }

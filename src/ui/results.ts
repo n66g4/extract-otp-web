@@ -8,6 +8,7 @@ import { subscribe, getState, setState } from "../state/store";
 import { convertToOtpData } from "../services/otpFormatter";
 import { getOtpUniqueKey } from "../services/dataHandler";
 import { isNarrowViewport } from "./viewport";
+import { t } from "../services/i18n";
 
 function getQrCodeColors() {
   const computedStyles = getComputedStyle(document.documentElement);
@@ -46,7 +47,7 @@ function populateDetail(
   );
   if (!element) return;
 
-  element.textContent = value || "Not available";
+  element.textContent = value || t("common.notAvailable");
   element.classList.toggle("value-missing", !value);
 }
 
@@ -77,6 +78,19 @@ function populateCardDetails(
     cardElement.querySelector<HTMLSpanElement>(".otp-card-index")!;
   indexElement.textContent = String(index + 1);
 
+  // Update labels dynamically
+  const labels = cardElement.querySelectorAll(".detail-row .label");
+  labels.forEach((label) => {
+    const text = label.textContent || "";
+    if (text.includes("Name:") || text === t("common.name")) label.textContent = t("common.name");
+    else if (text.includes("Issuer:") || text === t("common.issuer")) label.textContent = t("common.issuer");
+    else if (text.includes("Type:") || text === t("common.type")) label.textContent = t("common.type");
+    else if (text.includes("Counter:") || text === t("common.counter")) label.textContent = t("common.counter");
+    else if (text.includes("Secret:") || text === t("common.secret")) label.textContent = t("common.secret");
+    else if (text.includes("URL:") || text === t("common.url")) label.textContent = t("common.url");
+    else if (text.includes("QR:") || text === t("common.qr")) label.textContent = t("common.qr");
+  });
+  
   populateDetail(cardElement, "name", otp.name);
   populateDetail(cardElement, "issuer", otp.issuer);
   populateDetail(cardElement, "type", otp.typeDescription);
@@ -100,8 +114,9 @@ function populateCardDetails(
   const secretInputId = `secret-input-${index}`;
   secretInput.id = secretInputId;
   secretInput.value = otp.secret;
-  cardElement.querySelector<HTMLLabelElement>(".secret-row .label")!.htmlFor =
-    secretInputId;
+  const secretLabel = cardElement.querySelector<HTMLLabelElement>(".secret-row .label")!;
+  secretLabel.htmlFor = secretInputId;
+  secretLabel.textContent = t("common.secret");
   secretInput.setAttribute("aria-describedby", helpTextId);
 
   const urlInput =
@@ -109,9 +124,20 @@ function populateCardDetails(
   const urlInputId = `url-input-${index}`;
   urlInput.id = urlInputId;
   urlInput.value = otp.url;
-  cardElement.querySelector<HTMLLabelElement>(".otp-url-row .label")!.htmlFor =
-    urlInputId;
+  const urlLabel = cardElement.querySelector<HTMLLabelElement>(".otp-url-row .label")!;
+  urlLabel.htmlFor = urlInputId;
+  urlLabel.textContent = t("common.url");
   urlInput.setAttribute("aria-describedby", helpTextId);
+  
+  // Update copy button labels
+  const secretCopyBtn = cardElement.querySelector<HTMLButtonElement>(".secret-container .copy-button .visually-hidden");
+  if (secretCopyBtn) secretCopyBtn.textContent = t("buttons.copySecret");
+  const urlCopyBtn = cardElement.querySelector<HTMLButtonElement>(".otp-url-container .copy-button .visually-hidden");
+  if (urlCopyBtn) urlCopyBtn.textContent = t("buttons.copyUrl");
+  
+  // Update QR hint
+  const qrHint = cardElement.querySelector(".qr-enlarge-hint");
+  if (qrHint) qrHint.textContent = t("buttons.tapToEnlarge");
 }
 
 /**
@@ -132,7 +158,7 @@ function setupCardEvents(
   const qrCodeLabel =
     qrCodeContainer.querySelector<HTMLSpanElement>(".visually-hidden");
   if (qrCodeLabel) {
-    qrCodeLabel.textContent = `Show larger QR code for ${titleText}`;
+    qrCodeLabel.textContent = `${t("buttons.showLargerQr")} ${titleText}`;
   }
 
   qrCodeContainer.addEventListener("click", (event: MouseEvent) => {
@@ -402,7 +428,7 @@ export function initResults() {
       // 2. Update the selection count text.
       const count = selectedOtpKeys.size;
       const total = otps.length;
-      selectionCountSpan.textContent = `${count} of ${total} selected`;
+      selectionCountSpan.textContent = `${count} ${t("common.of")} ${total} ${t("common.selected")}`;
 
       const setButtonNavigable = (
         button: HTMLButtonElement,

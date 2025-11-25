@@ -1,5 +1,6 @@
 import { $ } from "./dom";
 import { setState } from "../state/store";
+import { t } from "../services/i18n";
 
 type AlertType = "error" | "warning" | "success" | "info";
 
@@ -78,7 +79,7 @@ function displayAlert(message: string, type: AlertType): void {
   const closeButton = document.createElement("button");
   closeButton.className = "alert-close-button navigable";
   closeButton.innerHTML = "&#x2715;"; // '✕' symbol
-  closeButton.setAttribute("aria-label", `Close ${type} message`);
+  closeButton.setAttribute("aria-label", `${t("common.close")} ${type} ${t("common.select")}`);
 
   alertElement.appendChild(messageSpan);
   alertElement.appendChild(closeButton);

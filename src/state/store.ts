@@ -1,4 +1,5 @@
 import { MigrationOtpParameter } from "../types";
+import { Language } from "../services/i18n";
 
 /**
  * Defines the shape of our application's state.
@@ -10,6 +11,7 @@ export interface AppState {
   selectedOtpKeys: Set<string>;
   theme: "light" | "dark" | "system";
   focusedOtpKey: string | null;
+  language: Language;
 }
 
 const state: AppState = {
@@ -18,6 +20,7 @@ const state: AppState = {
   selectedOtpKeys: new Set(),
   theme: (localStorage.getItem("theme") as AppState["theme"]) || "system",
   focusedOtpKey: null,
+  language: "en",
 };
 
 type Listener = (state: AppState) => void;

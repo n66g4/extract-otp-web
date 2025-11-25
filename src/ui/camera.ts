@@ -3,6 +3,7 @@ import { $ } from "./dom";
 import { handleDecodedQrString } from "../services/dataHandler";
 import { displayError, announceToScreenReader } from "./notifications";
 import { logger } from "../services/logger";
+import { t } from "../services/i18n";
 
 // DOM Elements
 let video: HTMLVideoElement;
@@ -56,7 +57,7 @@ function scanFrame() {
     if (code && code.data) {
       // QR code found!
       closeCamera();
-      announceToScreenReader("QR code found and processed.");
+      announceToScreenReader(t("messages.qrCodeFound"));
       // Delegate all processing to the central service.
       handleDecodedQrString(code.data, "Camera Scan");
       return; // Stop the scanning loop
@@ -97,7 +98,7 @@ function closeCamera() {
  */
 async function openCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    displayError("Sorry, your browser doesn't support accessing the camera.");
+    displayError(t("messages.cameraNotSupported"));
     return;
   }
 
@@ -140,7 +141,7 @@ async function openCamera() {
       return; // Ignore user aborting by closing the modal.
     }
     logger.error("Error accessing camera: ", err);
-    displayError("Could not access the camera.");
+    displayError(t("messages.couldNotAccessCamera"));
     closeCamera();
   }
 }

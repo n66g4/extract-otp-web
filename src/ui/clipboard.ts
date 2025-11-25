@@ -1,5 +1,6 @@
 import { announceToScreenReader } from "./notifications";
 import { logger } from "../services/logger";
+import { t } from "../services/i18n";
 
 /**
  * Copies a string to the user's clipboard and provides visual feedback on a button.
@@ -18,7 +19,7 @@ export const copyToClipboard = (
       const subject = (
         buttonElement.getAttribute("aria-label") || "Content"
       ).replace("Copy ", "");
-      announceToScreenReader(`${subject} copied to clipboard.`);
+      announceToScreenReader(`${subject} ${t("common.select")} copied to clipboard.`);
       setTimeout(() => buttonElement.classList.remove("copied"), 1500);
     })
     .catch((err) => {

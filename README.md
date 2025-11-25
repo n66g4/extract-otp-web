@@ -2,6 +2,8 @@
 
 A simple, secure, and purely client-side web tool to extract One-Time Password (OTP) secrets from Google Authenticator and LastPass Authenticator QR code exports.
 
+[中文文档](README.zh-CN.md) | [English](README.md)
+
 ## [Open the tool →](https://mfcarroll.github.io/extract-otp-web/)
 
 [https://mfcarroll.github.io/extract-otp-web/](https://mfcarroll.github.io/extract-otp-web/)
@@ -68,7 +70,13 @@ Security and privacy are the top priorities of this tool.
 
 ## Development
 
-This project is built with [Vite](https://vitejs.dev/).
+This project is built with [Vite](https://vitejs.dev/) for development and bundling, but **the final deployed application has zero framework dependencies** - it runs as pure vanilla JavaScript in the browser.
+
+### Important Note
+
+- **Runtime**: The deployed application is pure client-side JavaScript with no framework dependencies (no React, Vue, Angular, etc.)
+- **Build Time**: Development and building require Node.js and npm dependencies (Vite, TypeScript, etc.) to compile TypeScript and bundle the code
+- **Deployment**: The built output is static HTML/CSS/JS files that can be served by any web server - no Node.js runtime needed
 
 ### Prerequisites
 
@@ -84,7 +92,7 @@ This project is built with [Vite](https://vitejs.dev/).
     cd extract-otp-web
     ```
 
-2.  Install dependencies:
+2.  Install dependencies (needed for building/development only):
 
     ```bash
     npm install
@@ -97,6 +105,16 @@ This project is built with [Vite](https://vitejs.dev/).
     ```
 
 4.  Open your browser to the local URL provided.
+
+### Building for Production
+
+To build the static files for deployment:
+
+```bash
+npm run build
+```
+
+The output will be in the `dist/` directory - these are pure static files that can be deployed to any web server (GitHub Pages, Netlify, etc.) without any Node.js runtime.
 
 ## Acknowledgements
 
