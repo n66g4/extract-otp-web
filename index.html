@@ -111,7 +111,6 @@
                   accounts".
                 </li>
                 <li>Select the accounts you wish to export.</li>
-                <li>Take a screenshot of each QR code that is displayed.</li>
               </ul>
               <h4>Export from LastPass</h4>
               <ul>
@@ -120,18 +119,25 @@
                   Click on the cog and select "Transfer accounts" > "Export
                   accounts to QR code".
                 </li>
-                <li>Take a screenshot of each QR code that is displayed.</li>
+                <li>
+                  For lastpass, you can also choose "Export accounts to file"
+                  and import that instead. This tool supports both formats.
+                </li>
               </ul>
-              <p>
-                (For lastpass, you can also choose "Export accounts to file" and
-                import that instead. This tool supports both formats.)
-              </p>
 
               <h3>2. Extract Secrets</h3>
               <ul>
                 <li>
-                  Click "Select QR Code Image(s)" or drag and drop your
-                  screenshot(s) onto the page.
+                  Click "Scan QR" to scan codes directly using a second device.
+                </li>
+                <li>
+                  Alternatively, take a screenshot of each QR code that is
+                  displayed, then click "Select QR Code Image(s)" or drag and
+                  drop your screenshot(s) onto the page.
+                </li>
+                <li>
+                  You can also enter a secret directly as text, and this tool
+                  will display your original setup QR code.
                 </li>
               </ul>
               <h3>3. Use Your Secrets</h3>
@@ -650,15 +656,15 @@
             multiple
           />
           <div class="file-input-buttons">
+            <button id="btn-scan-qr" class="btn btn-primary navigable">
+              <i class="fa fa-camera"></i> Scan QR
+            </button>
+
             <button
-              class="btn btn-primary navigable"
+              class="btn btn-secondary navigable"
               onclick="document.getElementById('file-input').click()"
             >
               <i class="fa fa-upload"></i> Load File(s)
-            </button>
-
-            <button id="btn-scan-qr" class="btn btn-secondary navigable">
-              <i class="fa fa-camera"></i> Scan QR
             </button>
 
             <button id="btn-manual-entry" class="btn btn-secondary navigable">
@@ -666,7 +672,9 @@
             </button>
           </div>
 
-          <div class="drop-text">or drag and drop files here</div>
+          <div class="drop-text">
+            or drag and drop files here<br />(image, json export, csv, or txt)
+          </div>
 
           <div id="upload-log-container">
             <ul id="upload-log-list"></ul>
@@ -839,7 +847,7 @@
       <!-- 6. Footer Section -->
       <footer class="navigable-section">
         <div class="footer-content">
-          <span>&copy; <span id="copyright-year"></span></span>
+          <span>&copy; 2025–<span id="copyright-year"></span></span>
           <a
             id="author-link"
             class="navigable"
