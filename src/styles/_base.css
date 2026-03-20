@@ -84,12 +84,10 @@ html.dark-mode {
 }
 
 /* Modal is always light-themed for QR code scannability */
-:root,
-html.dark-mode {
-  --modal-background: #ffffff;
-  --modal-text-color: #2c3e50;
-  --modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-  --modal-close-color: #ffffff;
+:root {
+  --modal-background: var(--card-background);
+  --modal-text-color: var(--text-color);
+  --modal-shadow: var(--shadow-elevation-medium);
 }
 
 body {

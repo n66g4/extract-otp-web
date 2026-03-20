@@ -81,7 +81,7 @@ export function openModal(
 
   document.addEventListener('keydown', handleEscapeKey);
   document.addEventListener('keydown', handleTabKey);
-  modalElement.addEventListener('click', handleBackdropClick);
+  modalElement.addEventListener('mousedown', handleBackdropClick);
 
   const modalCloseButton =
     modalElement.querySelector<HTMLButtonElement>('.modal-close');

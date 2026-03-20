@@ -436,7 +436,7 @@ export function initResults() {
 
     // If all OTPs are cleared, return focus to the file input area for a smooth workflow.
     if (otps.length === 0 && previousOtpCount > 0) {
-      $<HTMLLabelElement>('.file-input-label')?.focus();
+      $<HTMLLabelElement>('.file-input-wrapper .btn')?.focus();
     }
     // Update for the next change
     previousOtpCount = state.otps.length;

@@ -3,7 +3,58 @@ import { MigrationOtpParameter } from '../types';
 import { base64ToUint8Array, decodeProtobufPayload } from './protobufProcessor';
 import { processLastPassQrJson } from './lastPassFormatter';
 import { mapToMigrationOtpParameter, RawOtpAccount } from './otpDataMapper';
+import base32 from 'thirty-two';
 import { logger } from './logger';
+
+/**
+ * Parses either an otpauth URL, a Google Migration URL, a LastPass JSON string,
+ * or a raw Base32 secret string.
+ */
+export async function parseFlexibleInput(
+  input: string
+): Promise<MigrationOtpParameter[]> {
+  const trimmed = input.trim();
+  if (!trimmed) return [];
+
+  // 1. First, attempt to run it through the main parser.
+  // This handles otpauth://, otpauth-migration://, and LastPass JSON arrays natively!
+  try {
+    const params = await getOtpParametersFromUrl(trimmed);
+    if (params && params.length > 0) {
+      return params;
+    }
+  } catch (e) {
+    // If it fails to parse as a known URI/JSON format, we swallow the error
+    // and see if it's a raw base32 secret.
+  }
+
+  // 2. Try raw Base32 secret
+  // Remove spaces, dashes, and ensure uppercase for validation
+  const cleanedSecret = trimmed.replace(/[\s-]/g, '').toUpperCase();
+
+  // Base32 Regex: letters A-Z, numbers 2-7, optional padding =
+  const base32Regex = /^[A-Z2-7]{10,}=*$/;
+
+  if (base32Regex.test(cleanedSecret)) {
+    // Decode the base32 string into a Uint8Array to satisfy MigrationOtpParameter
+    const decodedSecret = new Uint8Array(base32.decode(cleanedSecret));
+
+    return [
+      {
+        secret: decodedSecret,
+        name: 'Secret',
+        issuer: '',
+        type: 2, // OTP_TYPE_TOTP
+        algorithm: 1, // ALGORITHM_SHA1
+        digits: 6,
+      },
+    ];
+  }
+
+  throw new Error(
+    'Input must be a valid OTP URL, LastPass JSON, or a Base32 secret (letters A-Z, numbers 2-7).'
+  );
+}
 
 /**
  * Decodes a standard otpauth:// URL into OTP parameters.

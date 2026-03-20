@@ -1,6 +1,6 @@
 /* --- Camera Feature UI --- */
 
-#take-photo-button {
+#btn-scan-qr {
   display: inline-flex; /* Always display the button */
 }
 
@@ -68,8 +68,6 @@
   ) !important; /* White border for scan region */
   stroke-width: 3 !important;
 }
-
-
 
 .camera-scan-text {
   position: absolute;

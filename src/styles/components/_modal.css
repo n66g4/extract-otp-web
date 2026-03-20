@@ -21,7 +21,7 @@ body.modal-open {
 }
 
 /* --- Mobile-First Styles --- */
-#modal-content {
+.modal-content {
   position: relative;
   background-color: var(--modal-background);
   display: flex;
@@ -95,26 +95,31 @@ body.modal-open {
   background: rgba(255, 255, 255, 0.4);
 }
 
+/* --- QR Modal Specific Overrides --- */
+/* Keep the QR modal white so the code remains scannable */
+#qr-modal .modal-content {
+  background-color: #ffffff;
+}
+
+#qr-modal .modal-title {
+  color: #2c3e50;
+}
+
 /* On mobile, the QR modal content is full-screen with a light background,
    so its close button needs to be dark to be visible. */
 #qr-modal .modal-close {
-  color: var(--modal-text-color); /* Use the same dark color as the title */
-  background: rgba(0, 0, 0, 0.1); /* A subtle dark background */
+  color: #2c3e50; /* Hardcode dark text */
+  background: rgba(0, 0, 0, 0.1);
 }
 
 #qr-modal .modal-close:hover,
 #qr-modal .modal-close:focus-visible {
-  background: rgba(
-    0,
-    0,
-    0,
-    0.2
-  ); /* A slightly darker background on hover/focus */
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* --- Desktop Adjustments --- */
 @media (min-width: 601px) {
-  #modal-content {
+  .modal-content {
     /* Revert to a smaller, centered modal on larger screens */
     width: auto;
     height: auto;

@@ -5,7 +5,8 @@ import { openModal, closeModal } from './modalHandler';
 
 function hideQrModal(): void {
   const modal = $<HTMLDivElement>('#qr-modal');
-  $<HTMLDivElement>('#modal-content').innerHTML = '';
+  const modalContent = $<HTMLDivElement>('#qr-modal .modal-content');
+  modalContent.innerHTML = '';
   closeModal(modal);
 }
 
@@ -15,7 +16,7 @@ export function showQrModal(
   fromKeyboard = false
 ): void {
   const modal = $<HTMLDivElement>('#qr-modal');
-  const modalContent = $<HTMLDivElement>('#modal-content');
+  const modalContent = $<HTMLDivElement>('#qr-modal .modal-content');
   const modalTitleId = 'qr-modal-title';
 
   modalContent.innerHTML = '';

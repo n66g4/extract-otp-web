@@ -68,7 +68,9 @@ function getSection(el: HTMLElement): HTMLElement | null {
 
 function getNavigableSections(): HTMLElement[] {
   if (document.body.classList.contains('modal-open')) {
-    const activeModal = document.querySelector<HTMLElement>('.modal-overlay.active');
+    const activeModal = document.querySelector<HTMLElement>(
+      '.modal-overlay.active'
+    );
     if (activeModal) {
       return Array.from(
         activeModal.querySelectorAll<HTMLElement>('.navigable-section')
@@ -403,6 +405,16 @@ function findNext(
  * @param event The keyboard event.
  */
 function handleKeydown(event: KeyboardEvent): void {
+  // --- Guard for editable text fields ---
+  if (
+    (event.key === 'ArrowLeft' || event.key === 'ArrowRight') &&
+    document.activeElement?.matches(
+      'input[type="text"]:not([readonly]), textarea:not([readonly])'
+    )
+  ) {
+    return; // Allow native text cursor movement
+  }
+
   // --- Global Shortcuts (like Ctrl+A) ---
   // These should be checked first and should work regardless of what is focused.
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a') {

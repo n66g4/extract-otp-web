@@ -2,6 +2,7 @@ import { MigrationOtpParameter } from '../types';
 import { processImage } from '../services/qrProcessor';
 import { processJson } from '../services/jsonProcessor';
 import { processCsv } from '../services/csvProcessor';
+import { processText } from '../services/txtProcessor';
 import { getOtpUniqueKey, filterAndLogOtps } from '../services/dataHandler';
 import { setState, getState } from '../state/store';
 import { addUploadLog, displayError } from './notifications';
@@ -14,12 +15,17 @@ import { $ } from './dom';
  * @param isProcessing Whether the application is currently processing files.
  */
 function setProcessingState(isProcessing: boolean): void {
-  const fileInputLabel = $<HTMLLabelElement>('.file-input-label');
-  const qrInput = $<HTMLInputElement>('#qr-input');
+  const fileDropZone = $<HTMLDivElement>('.file-input-wrapper');
+  const qrInput = $<HTMLInputElement>('#file-input');
+  const browseButton = document.querySelector<HTMLButtonElement>(
+    '.file-input-buttons .btn-primary'
+  );
 
-  fileInputLabel.classList.toggle('processing', isProcessing);
-  // A processing label is not interactive.
-  fileInputLabel.classList.toggle('navigable', !isProcessing);
+  fileDropZone.classList.toggle('processing', isProcessing);
+  if (browseButton) {
+    browseButton.disabled = isProcessing;
+    browseButton.classList.toggle('navigable', !isProcessing);
+  }
   qrInput.disabled = isProcessing;
 }
 
@@ -50,6 +56,9 @@ async function processSingleFile(
     } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
       const fileContent = await file.text();
       otpParameters = await processCsv(fileContent);
+    } else if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+      const fileContent = await file.text();
+      otpParameters = await processText(fileContent);
     } else {
       throw new Error('Unsupported file type.');
     }
@@ -157,7 +166,7 @@ export function resetFileInput(): void {
  * Sets up event listeners for file selection, drag enter, drag leave, and drop events.
  */
 export function initFileInput(): void {
-  qrInputElement = $<HTMLInputElement>('#qr-input'); // Assign to module-level variable
+  qrInputElement = $<HTMLInputElement>('#file-input'); // Assign to module-level variable
   const fileDropZone = $<HTMLDivElement>('.file-input-wrapper');
   const dragOverlay = $<HTMLDivElement>('#drag-overlay');
   let dragCounter = 0;

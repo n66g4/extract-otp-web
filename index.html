@@ -124,7 +124,7 @@
               </ul>
               <p>
                 (For lastpass, you can also choose "Export accounts to file" and
-                upload that instead. This tool supports both formats.)
+                import that instead. This tool supports both formats.)
               </p>
 
               <h3>2. Extract Secrets</h3>
@@ -386,7 +386,7 @@
                     around this issue by providing more than one code, each
                     containing a few accounts. Luckily, LastPass allows you to
                     export a json file, which this tool can also read, so just
-                    upload that instead.
+                    import that instead.
                   </p>
                 </div>
               </div>
@@ -611,39 +611,35 @@
 
         <!-- 3. File Upload Section -->
         <div class="file-input-wrapper navigable-section">
+          <input
+            type="file"
+            id="file-input"
+            class="file-input"
+            accept=".json,.csv,.txt,image/*"
+            multiple
+          />
           <div class="file-input-buttons">
-            <label
-              for="qr-input"
-              class="file-input-label btn btn-primary navigable"
-              role="button"
-              tabindex="0"
-            >
-              <span class="label-idle">
-                <i class="fa fa-upload"></i> Select Image(s)
-              </span>
-              <span class="label-processing">
-                <i class="fa fa-spinner fa-spin"></i> Processing...
-              </span>
-            </label>
             <button
-              id="take-photo-button"
               class="btn btn-primary navigable"
-              tabindex="0"
+              onclick="document.getElementById('file-input').click()"
             >
-              <i class="fa fa-camera"></i> Scan QR Code
+              <i class="fa fa-upload"></i> Load File(s)
+            </button>
+
+            <button id="btn-scan-qr" class="btn btn-secondary navigable">
+              <i class="fa fa-camera"></i> Scan QR
+            </button>
+
+            <button id="btn-manual-entry" class="btn btn-secondary navigable">
+              <i class="fa fa-pen-to-square"></i> Enter Code
             </button>
           </div>
 
           <div class="drop-text">or drag and drop files here</div>
+
           <div id="upload-log-container">
             <ul id="upload-log-list"></ul>
           </div>
-          <input
-            type="file"
-            id="qr-input"
-            accept="image/*,application/json,.json,text/csv,.csv"
-            multiple
-          />
         </div>
 
         <div id="error-message-container" class="navigable-section"></div>
@@ -875,7 +871,7 @@
     </div>
     <div id="qr-modal" class="modal-overlay" role="dialog" aria-modal="true">
       <button class="modal-close navigable" aria-label="Close">&#x2715;</button>
-      <div id="modal-content"></div>
+      <div class="modal-content"></div>
     </div>
     <div
       id="camera-modal"
@@ -906,6 +902,62 @@
       >
         &#x2715;
       </button>
+    </div>
+    <div id="manual-modal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="manual-modal-title"
+      >
+        <div class="modal-header">
+          <h2 id="manual-modal-title">Enter OTP Code</h2>
+          <button class="modal-close navigable" aria-label="Close modal">
+            &times;
+          </button>
+        </div>
+        <div
+          class="modal-body"
+          style="display: flex; flex-direction: column; gap: 1rem"
+        >
+          <p style="font-size: 0.9rem; color: var(--text-secondary)">
+            Paste an <code>otpauth://</code> URL or a raw Base32 secret key
+            (e.g., <code>JBSW Y3DP EHPK 3PXP</code>).
+          </p>
+          <input
+            type="text"
+            id="manual-otp-input"
+            class="navigable"
+            placeholder="Secret key or URL..."
+            style="
+              padding: 0.75rem;
+              border-radius: 4px;
+              border: 1px solid var(--border-color);
+              background: var(--bg-secondary);
+              color: var(--text-primary);
+              font-family: monospace;
+              width: 100%;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+        <div
+          class="modal-footer"
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+          "
+        >
+          <button id="manual-otp-cancel" class="btn btn-secondary navigable">
+            Cancel
+          </button>
+          <button id="manual-otp-submit" class="btn btn-primary navigable">
+            Add Code
+          </button>
+        </div>
+      </div>
     </div>
     <div id="drag-overlay"></div>
     <!-- Visually hidden live region for screen reader announcements -->

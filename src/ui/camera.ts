@@ -15,8 +15,8 @@ const cameraSelect = document.getElementById(
 const cameraSwitch = document.getElementById(
   'camera-switch'
 ) as HTMLButtonElement;
-const takePhotoButton = document.getElementById(
-  'take-photo-button'
+const scanQrButton = document.getElementById(
+  'btn-scan-qr'
 ) as HTMLButtonElement;
 
 let qrScanner: QrScanner | null = null;
@@ -187,7 +187,6 @@ async function startScan(event: MouseEvent | KeyboardEvent) {
       stopScan(); // Ensure modal is closed if no camera
       return; // Exit early if no camera
     }
-
   } catch (error) {
     logger.error('Failed to start camera:', error);
     displayError(
@@ -259,9 +258,7 @@ async function switchCamera() {
 }
 
 export function initCamera() {
-  document
-    .getElementById('take-photo-button')
-    ?.addEventListener('click', startScan);
+  scanQrButton?.addEventListener('click', startScan);
   document.getElementById('camera-cancel')?.addEventListener('click', stopScan);
   cameraSelect.addEventListener('change', async () => {
     if (qrScanner) {
