@@ -46,7 +46,8 @@ function getSelectedOtps(): MigrationOtpParameter[] {
  */
 async function handleExport(
   exportFn: (otps: MigrationOtpParameter[]) => Promise<any>,
-  isQrExport = false
+  isQrExport = false,
+  openedByKeyboard = false
 ) {
   const selectedOtps = getSelectedOtps();
   if (selectedOtps.length === 0) {
@@ -59,10 +60,7 @@ async function handleExport(
       const title = result.startsWith('lpaauth')
         ? 'Scan with LastPass Authenticator'
         : 'Scan with Google Authenticator';
-      // Show the QR modal. The `true` argument indicates that the modal was
-      // opened by a user action (potentially keyboard), so focus should be
-      // restored to the trigger button when the modal is closed.
-      showQrModal(result, title, true /* fromKeyboard */);
+      showQrModal(result, title, openedByKeyboard);
     }
   } catch (error: any) {
     const message = error.message || 'An unknown error occurred during export.';
@@ -86,16 +84,16 @@ export function initExportControls(): void {
   const deselectAllButton = $<HTMLButtonElement>('#deselect-all-button')!;
 
   // --- Export Button Listeners ---
-  downloadCsvButton.addEventListener('click', () => {
-    handleExport(async (otps) => downloadAsCsv(otps));
+  downloadCsvButton.addEventListener('click', (event) => {
+    handleExport(async (otps) => downloadAsCsv(otps), false, event.detail === 0);
   });
-  downloadJsonButton.addEventListener('click', () => {
-    handleExport(async (otps) => downloadAsJson(otps));
+  downloadJsonButton.addEventListener('click', (event) => {
+    handleExport(async (otps) => downloadAsJson(otps), false, event.detail === 0);
   });
-  exportGoogleButton.addEventListener('click', () =>
-    handleExport(exportToGoogleAuthenticator, true)
+  exportGoogleButton.addEventListener('click', (event) =>
+    handleExport(exportToGoogleAuthenticator, true, event.detail === 0)
   );
-  exportLastPassButton.addEventListener('click', () => {
+  exportLastPassButton.addEventListener('click', (event) => {
     const selectedOtps = getSelectedOtps();
     if (selectedOtps.length === 0) {
       announceToScreenReader('No accounts selected to export.');
@@ -134,7 +132,7 @@ export function initExportControls(): void {
 
     // For all other cases (only TOTP, or only HOTP), let the standard export function handle it.
     // It will succeed for TOTP-only selections, and fail with a clear error for HOTP-only selections.
-    handleExport(exportToLastPass, true);
+    handleExport(exportToLastPass, true, event.detail === 0);
   });
 
   // --- State-Modifying Button Listeners ---

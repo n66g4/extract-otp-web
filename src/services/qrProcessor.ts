@@ -1,9 +1,10 @@
 import { MigrationOtpParameter } from '../types';
 import { getOtpParametersFromUrl } from './otpUrlParser';
-import { logger, isDebugEnabled } from './logger';
+import { logger } from './logger';
 
 import jsQR, { QRCode } from 'jsqr';
 import pica from 'pica';
+import QrScanner from 'qr-scanner';
 
 const TARGET_SIZES = [400, 600, 800, 1000, 1200];
 const picaInstance = pica();
@@ -166,14 +167,16 @@ export function processImage(
   logger.debug(`[processImage] Starting multi-pass scan for: ${file.name}`);
   return new Promise(async (resolve, reject) => {
     // Helper to process a found QR code and resolve the main promise.
-    const processAndResolve = async (qrCode: QRCode) => {
+    const processAndResolve = async (qrCodeResult: QRCode | string) => {
       try {
-        const otpParameters = await getOtpParametersFromUrl(qrCode.data);
+        const qrCodeData =
+          typeof qrCodeResult === 'string' ? qrCodeResult : qrCodeResult.data;
+        const otpParameters = await getOtpParametersFromUrl(qrCodeData);
         resolve(otpParameters);
       } catch (err) {
         logger.error(
           `Failed to process QR code content from ${file.name}. Raw data:`,
-          qrCode.data
+          qrCodeResult
         );
         reject(err);
       }
@@ -196,7 +199,7 @@ export function processImage(
         const { canvas: locatorCanvas, context: locatorContext } =
           await resizeImage(originalBitmap, locatorSize);
 
-        if (isDebugEnabled) {
+        if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
           debugCanvases.push({
             title: `Attempted Scan at ${locatorCanvas.width}x${locatorCanvas.height}px`,
             dataUrl: locatorCanvas.toDataURL(),
@@ -217,6 +220,15 @@ export function processImage(
           locatorImageData.width,
           locatorImageData.height
         );
+
+        // Force jsQR to fail if VITE_FORCE_JSQR_FAIL is set for testing fallback
+        if (import.meta.env.VITE_FORCE_JSQR_FAIL) {
+          logger.debug(
+            '[processImage] VITE_FORCE_JSQR_FAIL is set. Forcing jsQR to fail.'
+          );
+          // Skip the rest of the jsQR attempts and proceed to fallback to qr-scanner, for testing.
+          continue;
+        }
 
         // Attempt 1: Use locator scan to find QR, then do high-res cropped scan
         if (initialScanResult) {
@@ -253,7 +265,7 @@ export function processImage(
               logger.debug(
                 `[processImage] Success on cropped scan at ${decoderSize}px`
               );
-              if (isDebugEnabled) {
+              if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
                 // Draw the detected location on the locator canvas for context
                 const { x, y, width, height } = calculateBoundingBox(
                   initialScanResult.location,
@@ -289,7 +301,7 @@ export function processImage(
           logger.debug(
             `[processImage] Cropped scan failed. Falling back to full image scan at ${locatorSize}px`
           );
-          if (isDebugEnabled) {
+          if (import.meta.env.VITE_DEBUG_QR_IMAGES === 'true') {
             openDebugPreview([
               {
                 title: `Fallback Full Scan (${locatorCanvas.width}x${locatorCanvas.height}px)`,
@@ -303,9 +315,35 @@ export function processImage(
         }
       }
 
+      // If we get here, no QR code was found after all jsQR attempts.
+      logger.debug(
+        '[processImage] All jsQR scan attempts failed. Trying QrScanner.scanImage as fallback.'
+      );
+
+      try {
+        const qrScannerResult = await QrScanner.scanImage(file);
+        if (qrScannerResult) {
+          logger.debug(
+            '[processImage] QrScanner.scanImage succeeded:',
+            qrScannerResult
+          );
+          await processAndResolve(qrScannerResult);
+          return;
+        }
+      } catch (qrScannerError) {
+        logger.debug(
+          '[processImage] QrScanner.scanImage fallback failed:',
+          qrScannerError
+        );
+        // Continue to original error handling if QrScanner also fails
+      }
+
       // If we get here, no QR code was found after all attempts.
       logger.debug('[processImage] All scan attempts failed.');
-      if (isDebugEnabled && debugCanvases.length > 0) {
+      if (
+        import.meta.env.VITE_DEBUG_QR_IMAGES === 'true' &&
+        debugCanvases.length > 0
+      ) {
         openDebugPreview(debugCanvases);
       }
       resolve(null);

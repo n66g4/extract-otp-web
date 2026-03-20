@@ -5,10 +5,11 @@
  */
 
 import { Buffer } from 'buffer'; // Keep for browser environment polyfill
+import QrScanner from 'qr-scanner';
 import { initResults } from './ui/results';
 import { initFileInput } from './ui/fileInput';
 import { initCamera } from './ui/camera';
-import { initQrModal } from './ui/qrModal';
+
 import { initThemeSwitcher } from './ui/theme';
 import { initExportControls } from './ui/exportControls';
 import { initNavigation } from './ui/navigation';
@@ -19,6 +20,7 @@ import { displayError, announceToScreenReader } from './ui/notifications';
 import { logger } from './services/logger';
 
 window.Buffer = Buffer; // Make Buffer globally available for libraries that might need it.
+
 
 /**
  * Sets up global error handlers to catch unhandled exceptions and promise
@@ -48,7 +50,7 @@ function initializeApp(): void {
   initNavigation();
   initTabs();
   initAccordion();
-  initQrModal();
+  
   initResults();
   initFileInput();
   initCamera();

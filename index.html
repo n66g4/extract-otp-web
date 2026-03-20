@@ -17,13 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Readex+Pro&display=swap"
       rel="stylesheet"
     />
-    <script>
-      // Immediately check for camera support and add a class to the html element.
-      // This runs before the body is rendered, preventing any flicker.
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        document.documentElement.classList.add('camera-supported');
-      }
-    </script>
+
     <link rel="stylesheet" href="/src/style.css" />
   </head>
 
@@ -497,7 +491,7 @@
                   <ul>
                     <li>
                       <a
-                        href="https://github.com/cozmo/jsQR"
+                        href="https://github.com/cozmo/jsQR#readme"
                         target="_blank"
                         rel="noopener noreferrer"
                         >jsQR</a
@@ -506,7 +500,7 @@
                     </li>
                     <li>
                       <a
-                        href="https://github.com/nodeca/pica"
+                        href="https://github.com/nodeca/pica#readme"
                         target="_blank"
                         rel="noopener noreferrer"
                         >pica</a
@@ -515,16 +509,16 @@
                     </li>
                     <li>
                       <a
-                        href="https://github.com/nodeca/pica"
+                        href="https://github.com/nimiq/qr-scanner/#readme"
                         target="_blank"
                         rel="noopener noreferrer"
-                        >pica</a
+                        >QR Scanner</a
                       >
-                      for high-quality image resizing.
+                      for scanning QR codes using the camera.
                     </li>
                     <li>
                       <a
-                        href="https://github.com/protobufjs/protobuf.js"
+                        href="https://github.com/protobufjs/protobuf.js#readme"
                         target="_blank"
                         rel="noopener noreferrer"
                         >protobuf.js</a
@@ -533,10 +527,10 @@
                     </li>
                     <li>
                       <a
-                        href="https://github.com/soldair/node-qrcode"
+                        href="https://github.com/soldair/node-qrcode#readme"
                         target="_blank"
                         rel="noopener noreferrer"
-                        >qrcode</a
+                        >node-qrcode</a
                       >
                       for generating new QR codes for each account.
                     </li>
@@ -551,7 +545,7 @@
                     </li>
                     <li>
                       <a
-                        href="https://github.com/FortAwesome/Font-Awesome"
+                        href="https://github.com/FortAwesome/Font-Awesome#readme"
                         target="_blank"
                         rel="noopener noreferrer"
                         >Font Awesome</a
@@ -879,13 +873,7 @@
         </div>
       </footer>
     </div>
-    <div
-      id="qr-modal"
-      class="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      style="display: none"
-    >
+    <div id="qr-modal" class="modal-overlay" role="dialog" aria-modal="true">
       <button class="modal-close navigable" aria-label="Close">&#x2715;</button>
       <div id="modal-content"></div>
     </div>
@@ -894,21 +882,30 @@
       class="modal-overlay"
       role="dialog"
       aria-modal="true"
-      style="display: none"
     >
       <div class="camera-container">
         <video id="camera-video" playsinline></video>
-        <div class="camera-reticle"></div>
+
         <div id="camera-title" class="camera-scan-text">Scan QR Code</div>
-        <canvas id="camera-canvas" style="display: none"></canvas>
+        <canvas id="camera-canvas"></canvas>
+      </div>
+      <div class="camera-controls">
+        <select id="camera-select" class="navigable"></select>
         <button
-          id="camera-cancel"
-          class="modal-close navigable"
-          aria-label="Close"
+          id="camera-switch"
+          class="btn btn-secondary navigable"
+          aria-label="Switch Camera"
         >
-          &#x2715;
+          <i class="fa fa-sync-alt"></i>
         </button>
       </div>
+      <button
+        id="camera-cancel"
+        class="modal-close navigable"
+        aria-label="Close"
+      >
+        &#x2715;
+      </button>
     </div>
     <div id="drag-overlay"></div>
     <!-- Visually hidden live region for screen reader announcements -->

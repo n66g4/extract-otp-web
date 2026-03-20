@@ -29,6 +29,7 @@
     "pako": "^2.1.0",
     "pica": "^9.0.1",
     "protobufjs": "^7.5.3",
+    "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "thirty-two": "^1.0.2"
   }

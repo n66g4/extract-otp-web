@@ -34,14 +34,12 @@ This tool reads the QR code screenshots from Google Authenticator or LastPass Au
 1.  **Export from your One-Time Password App**:
 
     _Export from Google Authenticator_:
-
     - Open the Google Authenticator app on your phone.
     - Go to the menu and select "Transfer accounts" > "Export accounts".
     - Select the accounts you wish to export.
     - Take a screenshot of each QR code that is displayed.
 
     _Export from LastPass_:
-
     - Open the LastPass Authenticator on your phone.
     - Click on the cog and select "Transfer accounts" > "Export accounts to QR code".
     - Take a screenshot of each QR code that is displayed.
@@ -49,7 +47,6 @@ This tool reads the QR code screenshots from Google Authenticator or LastPass Au
     (For lastpass, you can also choose "Export accounts to file" and upload that instead. This tool supports both formats.)
 
 2.  **Extract Secrets**:
-
     - [Open this tool in your web browser](https://mfcarroll.github.io/extract-otp-web/)
     - Click "Select QR Code Image(s)" or drag and drop your screenshot(s) onto the page.
 
@@ -110,12 +107,13 @@ It was made possible by building on the work of several open-source projects, in
 
 The user interface and QR code processing are powered by these excellent open-source libraries:
 
-- [jsQR](https://github.com/cozmo/jsQR) for decoding QR codes from images.
-- [protobuf.js](https://github.com/protobufjs/protobuf.js) for decoding the Google Authenticator data payload.
-- [pica](https://github.com/nodeca/pica) for high-quality image resizing.
-- [qrcode](https://github.com/soldair/node-qrcode) for generating new QR codes for each account.
-- [thirty-two](https://github.com/wzrdtales/thirty-two) for Base32 encoding the OTP secrets.
-- [Font Awesome](https://github.com/FortAwesome/Font-Awesome) for the icons used in the UI.
+- [jsQR](https://github.com/cozmo/jsQR#readme) for decoding QR codes from images.
+- [protobuf.js](https://github.com/protobufjs/protobuf.js#readme) for decoding the Google Authenticator data payload.
+- [pica](https://github.com/nodeca/pica#readme) for high-quality image resizing.
+- [QR Scanner](https://github.com/nimiq/qr-scanner/#readme) for scanning QR codes using the camera.
+- [node-qrcode](https://github.com/soldair/node-qrcode#readme) for generating new QR codes for each account.
+- [thirty-two](https://github.com/wzrdtales/thirty-two#readme) for Base32 encoding the OTP secrets.
+- [Font Awesome](https://github.com/FortAwesome/Font-Awesome#readme) for the icons used in the UI.
 
 [Gemini Code Assist](https://codeassist.google/) was used during the development of this tool. All AI-generated code has been carefully manually reviewed.
 

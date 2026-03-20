@@ -67,6 +67,15 @@ function getSection(el: HTMLElement): HTMLElement | null {
 }
 
 function getNavigableSections(): HTMLElement[] {
+  if (document.body.classList.contains('modal-open')) {
+    const activeModal = document.querySelector<HTMLElement>('.modal-overlay.active');
+    if (activeModal) {
+      return Array.from(
+        activeModal.querySelectorAll<HTMLElement>('.navigable-section')
+      ).filter((el) => el.offsetParent !== null);
+    }
+    return []; // If modal is open but no active modal or no sections in it, return empty.
+  }
   return Array.from(
     document.querySelectorAll<HTMLElement>('.navigable-section')
   ).filter((el) => el.offsetParent !== null);
@@ -417,9 +426,40 @@ function handleKeydown(event: KeyboardEvent): void {
     // On Down or Right arrow, focus the first interactive element.
     if (key === 'arrowdown' || key === 'arrowright') {
       event.preventDefault();
-      // The currently active tab is a good initial target.
-      const activeTab = $<HTMLButtonElement>('#info-tabs .tab-button.active');
-      activeTab?.focus();
+      const direction = key.substring(5) as Direction;
+
+      // Find the first navigable element as a potential target.
+      const allNavigableSections = getNavigableSections();
+      let firstNavigable: HTMLElement | null = null;
+
+      if (allNavigableSections.length > 0) {
+        const firstNavigableSection = allNavigableSections[0];
+        // Check if the section itself is navigable
+        if (firstNavigableSection.classList.contains('navigable')) {
+          firstNavigable = firstNavigableSection;
+        } else {
+          // Otherwise, find the first navigable element within the section
+          firstNavigable =
+            firstNavigableSection.querySelector<HTMLElement>('.navigable');
+        }
+      }
+      if (!firstNavigable) return; // No where to go.
+
+      // Run the potential target through the prioritizers to see if one
+      // wants to redirect focus (e.g., to the active tab).
+      let elementToFocus: HTMLElement = firstNavigable;
+      for (const prioritizer of prioritizers) {
+        const prioritizedEl = prioritizer(
+          [firstNavigable],
+          direction,
+          document.body
+        );
+        if (prioritizedEl) {
+          elementToFocus = prioritizedEl;
+          break; // First prioritizer wins.
+        }
+      }
+      setFocus(null, elementToFocus, direction);
     }
     // After the initial interaction, subsequent keydowns on the body are ignored
     // until an element is focused, at which point this block is skipped.
