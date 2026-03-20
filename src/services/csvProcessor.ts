@@ -1,5 +1,6 @@
 import { MigrationOtpParameter } from '../types';
-import { getOtpParametersFromUrl } from './otpUrlParser';
+import { parseFlexibleInput } from './otpUrlParser';
+import { processText } from './txtProcessor';
 
 /**
  * A simple CSV row parser that handles fields enclosed in double quotes.
@@ -44,19 +45,36 @@ export async function processCsv(
   fileContent: string
 ): Promise<MigrationOtpParameter[]> {
   const rows = fileContent.trim().split(/\r?\n/);
-  if (rows.length < 2) return []; // Not enough rows for a header and data.
 
-  const headers = rows[0].split(',').map((h) => h.trim());
-  const urlIndex = headers.indexOf('url');
+  // Try to parse as our standard exported CSV format first
+  if (rows.length >= 2) {
+    const headers = rows[0].split(',').map((h) => h.trim());
+    const urlIndex = headers.indexOf('url');
 
-  if (urlIndex === -1) return []; // 'url' column is required.
+    if (urlIndex !== -1) {
+      const allOtpParams: MigrationOtpParameter[] = [];
+      for (const row of rows.slice(1)) {
+        if (!row.trim()) continue;
+        const fields = parseCsvRow(row);
+        const otpUrl = fields[urlIndex];
 
-  const allOtpParams: MigrationOtpParameter[] = [];
-  for (const row of rows.slice(1)) {
-    if (!row.trim()) continue;
-    const fields = parseCsvRow(row);
-    const otpUrl = fields[urlIndex];
-    if (otpUrl) allOtpParams.push(...(await getOtpParametersFromUrl(otpUrl)));
+        if (otpUrl) {
+          try {
+            allOtpParams.push(...(await parseFlexibleInput(otpUrl)));
+          } catch (error) {
+            // Ignore individual row failures in structured CSV parsing
+          }
+        }
+      }
+
+      // If we found valid OTPs using the structured method, return them.
+      if (allOtpParams.length > 0) {
+        return allOtpParams;
+      }
+    }
   }
-  return allOtpParams;
+
+  // Fallback: If it's a single line, missing the 'url' header, or parsing failed,
+  // treat the entire file as a generic text file. This keeps the logic DRY!
+  return processText(fileContent);
 }
