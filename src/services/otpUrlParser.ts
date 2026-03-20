@@ -42,7 +42,7 @@ export async function parseFlexibleInput(
     return [
       {
         secret: decodedSecret,
-        name: 'Secret',
+        name: 'One-Time Password', // URL output must include a name
         issuer: '',
         type: 2, // OTP_TYPE_TOTP
         algorithm: 1, // ALGORITHM_SHA1

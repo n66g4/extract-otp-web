@@ -298,7 +298,7 @@
                     an export QR code that bundles all your accounts together.
                     This makes it easy to transfer to a new device, but
                     difficult to switch to a different authenticator app.
-                    LastPass also provides individual QR codes for each account,
+                    LastPass does provide individual QR codes for each account,
                     which is a huge improvement, but it only provides the text
                     secrets in a JSON code format. In contrast, apps like
                     1Password make the original secrets easily accessible,
@@ -381,12 +381,13 @@
                 >
                   <p>
                     LastPass puts all of your accounts together into one QR
-                    code, and if you have many accounts this can make the
-                    details of the code hard to read. Google Authenticator works
-                    around this issue by providing more than one code, each
-                    containing a few accounts. Luckily, LastPass allows you to
-                    export a json file, which this tool can also read, so just
-                    import that instead.
+                    code, and if you have many accounts this can make the QR
+                    code details tiny and hard to read. Google Authenticator
+                    works around this issue by providing more than one code,
+                    each containing a few accounts. Luckily, LastPass allows you
+                    to export a json file, which this tool can also read. If
+                    you're having problems with LastPass, just save the json
+                    file and import that instead.
                   </p>
                 </div>
               </div>
@@ -432,7 +433,7 @@
                     aria-expanded="false"
                     aria-controls="faq-8-answer"
                   >
-                    <span class="faq-title">Acknowledgements</span>
+                    <span class="faq-title">How do I report a problem?</span>
                   </button>
                 </h3>
                 <div
@@ -440,6 +441,36 @@
                   class="faq-answer"
                   role="region"
                   aria-labelledby="faq-8-button"
+                >
+                  <p>
+                    Please report any issues with this tool on
+                    <a
+                      href="https://github.com/mfcarroll/extract-otp-web/issues"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      >GitHub</a
+                    >.
+                  </p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <h3>
+                  <button
+                    class="faq-button navigable"
+                    tabindex="-1"
+                    id="faq-9-button"
+                    aria-expanded="false"
+                    aria-controls="faq-9-answer"
+                  >
+                    <span class="faq-title">Acknowledgements</span>
+                  </button>
+                </h3>
+                <div
+                  id="faq-9-answer"
+                  class="faq-answer"
+                  role="region"
+                  aria-labelledby="faq-9-button"
                 >
                   <p>
                     This tool builds on the work of several open-source
